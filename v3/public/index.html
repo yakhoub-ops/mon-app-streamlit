@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lycée Lajesi Babin Young</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nunito:wght@400;700;800&display=swap');
+
+    :root {
+      --bg: #FAF3E0;
+      --terracotta: #C1440E;
+      --terracotta2: #E8622E;
+      --or: #D4A017;
+      --or2: #F0C040;
+      --indigo: #2C3E7A;
+      --indigo2: #1A2550;
+      --creme: #FAF3E0;
+      --card-w: 320px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Nunito', sans-serif;
+      color: #1A1208;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Motif wax en fond */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(193,68,14,0.045) 0px, rgba(193,68,14,0.045) 1px, transparent 1px, transparent 22px),
+        repeating-linear-gradient(-45deg, rgba(212,160,23,0.04) 0px, rgba(212,160,23,0.04) 1px, transparent 1px, transparent 22px);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--indigo2);
+      text-align: center;
+      padding: 0 20px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-stripe {
+      height: 9px;
+      background: repeating-linear-gradient(90deg,
+        var(--terracotta) 0,var(--terracotta) 24px,
+        var(--or) 24px,var(--or) 48px,
+        var(--indigo) 48px,var(--indigo) 72px,
+        #fff8ee 72px,#fff8ee 96px);
+      margin-bottom: 20px;
+    }
+    .header-stripe.bottom {
+      margin-bottom: 0; margin-top: 18px;
+      background: repeating-linear-gradient(90deg,
+        #fff8ee 0,#fff8ee 24px,
+        var(--indigo) 24px,var(--indigo) 48px,
+        var(--or) 48px,var(--or) 72px,
+        var(--terracotta) 72px,var(--terracotta) 96px);
+    }
+
+    .logo-cercle {
+      width: 68px; height: 68px;
+      background: var(--or);
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 0 0 5px rgba(212,160,23,0.25), 0 0 0 10px rgba(212,160,23,0.1);
+      animation: pulseOr 3s ease-in-out infinite;
+    }
+    @keyframes pulseOr {
+      0%,100% { box-shadow: 0 0 0 5px rgba(212,160,23,0.25), 0 0 0 10px rgba(212,160,23,0.1); }
+      50%      { box-shadow: 0 0 0 7px rgba(212,160,23,0.35), 0 0 0 15px rgba(212,160,23,0.12); }
+    }
+
+    .header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1rem, 4.5vw, 1.6rem);
+      font-weight: 800;
+      color: var(--or);
+      letter-spacing: 1px;
+      line-height: 1.25;
+      margin: 0 0 4px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .header p {
+      color: rgba(250,243,224,0.65);
+      font-size: 0.82rem;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── WRAP ── */
+    .wrap {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 28px 16px 80px;
+      text-align: center;
+      position: relative; z-index: 1;
+    }
+
+    /* ── TITRE PAGE ── */
+    .page-title {
+      margin-bottom: 22px;
+      animation: fadeDown 0.35s ease;
+    }
+    .page-title h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.05rem;
+      color: var(--indigo);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .ornement {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .ornement .ligne {
+      height: 2px; width: 70px;
+      background: linear-gradient(90deg, transparent, var(--or));
+    }
+    .ornement .ligne.r { background: linear-gradient(90deg, var(--or), transparent); }
+    .ornement .losange {
+      width: 9px; height: 9px;
+      background: var(--or); transform: rotate(45deg);
+    }
+
+    /* ── CONTENT ── */
+    #content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    /* ── CARTE ── */
+    .card {
+      width: var(--card-w);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 15px 18px;
+      border-radius: 14px;
+      color: #FAF3E0;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--indigo2) 0%, var(--indigo) 60%, #3a5298 100%);
+      border: 1px solid rgba(212,160,23,0.22);
+      box-shadow: 0 5px 18px rgba(26,18,8,0.16);
+      transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms ease;
+      animation: fadeUp 0.3s ease both;
+    }
+    /* Bande gauche dorée */
+    .card::after {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+      background: linear-gradient(180deg, var(--or), var(--terracotta));
+      border-radius: 14px 0 0 14px;
+    }
+    /* Motif wax coin droit */
+    .card::before {
+      content: '';
+      position: absolute; top: 0; right: 0; width: 70px; height: 100%;
+      background: repeating-linear-gradient(135deg,
+        rgba(212,160,23,0.07) 0, rgba(212,160,23,0.07) 2px,
+        transparent 2px, transparent 10px);
+      pointer-events: none;
+    }
+    .card:hover, .card:focus {
+      transform: translateY(-7px) scale(1.01);
+      box-shadow: 0 18px 40px rgba(26,18,8,0.26);
+      outline: none;
+    }
+
+    .card .icon {
+      font-size: 1.5rem;
+      width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      background: rgba(212,160,23,0.13);
+      border-radius: 10px;
+      border: 1px solid rgba(212,160,23,0.28);
+    }
+    .card .label {
+      font-weight: 700;
+      font-size: 0.97rem;
+      line-height: 1.2;
+      flex: 1;
+      text-align: left;
+      color: #FAF3E0;
+    }
+    .card .arrow { color: var(--or); font-size: 1.1rem; opacity: 0.8; }
+
+    /* ── RETOUR ── */
+    .card.back {
+      background: #F0E6C8;
+      color: var(--indigo);
+      border: 2px solid rgba(44,62,122,0.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .card.back::after { background: linear-gradient(180deg, var(--indigo), #6b7db3); }
+    .card.back .icon { background: rgba(44,62,122,0.07); border-color: rgba(44,62,122,0.18); }
+    .card.back .label { color: var(--indigo); }
+    .card.back .arrow { color: var(--indigo); }
+
+    /* ── SÉRIE S / L ── */
+    .card.serie-s { background: linear-gradient(135deg, #1A2550, #2C3E7A, #3a5298); }
+    .card.serie-l { background: linear-gradient(135deg, #5a1a0a, #8b2c0e, #C1440E); }
+
+    /* ── DOCUMENT ── */
+    .card.doc {
+      background: #fff;
+      color: #1A1208;
+      border: 1px solid #e8dfd0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .card.doc::after { background: linear-gradient(180deg, var(--terracotta), var(--or)); }
+    .card.doc .icon { background: rgba(193,68,14,0.07); border-color: rgba(193,68,14,0.2); }
+    .card.doc .label { color: #1A1208; }
+    .card.doc:hover { box-shadow: 0 12px 30px rgba(193,68,14,0.14); }
+
+    /* ── VIDE ── */
+    .card.vide {
+      background: #F0E6C8;
+      color: #aaa;
+      cursor: default;
+      border: 2px dashed rgba(0,0,0,0.1);
+      box-shadow: none;
+    }
+    .card.vide::after, .card.vide::before { display: none; }
+    .card.vide:hover { transform: none; box-shadow: none; }
+
+    /* ── BADGE FIREBASE ── */
+    .badge-fb {
+      display: inline-block;
+      background: rgba(193,68,14,0.1);
+      color: var(--terracotta);
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 20px;
+      border: 1px solid rgba(193,68,14,0.2);
+      margin-top: 2px;
+    }
+
+    /* ── SPINNER ── */
+    .spinner-wrap { text-align: center; padding: 40px; color: var(--indigo); }
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid #e8dfd0;
+      border-top-color: var(--terracotta);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── BLOBS (gardés de ton original) ── */
+    .blob, .blob2 {
+      position: fixed; width: 340px; height: 340px;
+      border-radius: 50%; filter: blur(130px); z-index: 0; pointer-events: none;
+    }
+    .blob  { background: rgba(44,62,122,0.35); top: -80px; left: -60px; animation: blobMove1 14s infinite alternate ease-in-out; }
+    .blob2 { background: rgba(193,68,14,0.3); bottom: -100px; right: -60px; animation: blobMove2 16s infinite alternate ease-in-out; }
+    @keyframes blobMove1 { from { transform: translate(0,0) scale(1); } to { transform: translate(100px,70px) scale(1.3); } }
+    @keyframes blobMove2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-100px,-60px) scale(1.4); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 400px) {
+      :root { --card-w: 100%; }
+      .card { padding: 13px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-stripe"></div>
+    <div class="logo-cercle">🎓</div>
+    <h1>LYCÉE LAJESI BABIN YOUNG</h1>
+    <p>Plateforme pédagogique des élèves</p>
+    <div class="header-stripe bottom"></div>
+  </div>
+
+  <main class="wrap">
+    <div class="page-title" id="page-title">
+      <h2>Bienvenue</h2>
+      <div class="ornement">
+        <div class="ligne"></div>
+        <div class="losange"></div>
+        <div class="ligne r"></div>
+      </div>
+    </div>
+    <div id="content" role="navigation" aria-label="Navigation principale"></div>
+  </main>
+
+  <div class="blob"></div>
+  <div class="blob2"></div>
+
+  <script src="data.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔧 REMPLACE PAR TA CONFIG FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyBelpxrNr6thF8Yl3Tz4k0Fu834p-8qTsE",
+      authDomain: "lycee-3f0d6.firebaseapp.com",
+      projectId: "lycee-3f0d6",
+      storageBucket: "lycee-3f0d6.firebasestorage.app",
+      messagingSenderId: "1046610989209",
+      appId: "1:1046610989209:web:9c446e52e52f09765ba808",
+      measurementId: "G-N7MJ6WXD09"
+  };
+
+    let db = null;
+    try { const app = initializeApp(firebaseConfig); db = getFirestore(app); } catch(e) {}
+
+    async function getFirebaseDocs(classe, matiere, type) {
+      if (!db) return [];
+      try {
+        const snap = await getDocs(collection(db, "documents"));
+        const out = [];
+        snap.forEach(d => {
+          const v = d.data();
+          if (v.classe === classe && v.matiere === matiere && v.type === type)
+            out.push({ titre: v.titre, fichier: v.fichier, fb: true });
+        });
+        return out;
+      } catch(e) { return []; }
+    }
+
+    // ── ÉTAT ──
+    const contentDiv = document.getElementById('content');
+    const titleEl    = document.getElementById('page-title').querySelector('h2');
+    let historyStack = [];
+    let currentClasse = null;
+    let currentSubject = null;
+
+    function clearContent() { contentDiv.innerHTML = ''; }
+    function setTitle(t) { titleEl.textContent = t; }
+
+    function pickIcon(text) {
+      if (text.includes('Série S')) return '🔬';
+      if (text.includes('Série L')) return '📖';
+      if (text.includes('Seconde')) return '🌱';
+      if (text.includes('Première')) return '🌿';
+      if (text.includes('Terminale')) return '🎯';
+      if (text === 'Cours') return '📘';
+      if (text === 'Exercices') return '📝';
+      if (text === 'Devoirs') return '🧾';
+      if (text === 'Compositions') return '🧪';
+      if (text === 'Math') return '🧮';
+      if (text === 'Français') return '📚';
+      if (text === 'Anglais') return '🔤';
+      if (text === 'HG') return '🗺️';
+      if (text === 'PC') return '⚛️';
+      if (text === 'SVT') return '🧬';
+      if (text === 'Voir les classes') return '🏫';
+      return '📁';
+    }
+
+    function animateCards() {
+      contentDiv.querySelectorAll('.card').forEach((c, i) => { c.style.animationDelay = (i * 0.05) + 's'; });
+    }
+
+    function createBackButton() {
+      if (!historyStack.length) return;
+      const back = document.createElement('div');
+      back.className = 'card back';
+      back.tabIndex = 0;
+      back.innerHTML = `<span class="icon">◀</span><span class="label">⬅ Retour</span><span class="arrow"></span>`;
+      back.onclick = () => { const prev = historyStack.pop(); prev(); };
+      back.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') back.onclick(); };
+      contentDiv.appendChild(back);
+    }
+
+    function createCard(text, action, extraClass = '', sub = '') {
+      const card = document.createElement('div');
+      card.className = 'card ' + extraClass;
+      card.tabIndex = 0;
+      card.innerHTML = `
+        <span class="icon">${pickIcon(text)}</span>
+        <span class="label">${text}${sub ? `<div style="font-size:.72rem;opacity:.6;font-weight:600;margin-top:2px">${sub}</div>` : ''}</span>
+        <span class="arrow">›</span>
+      `;
+      card.onclick = action;
+      card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') action(); };
+      contentDiv.appendChild(card);
+    }
+
+    // ── ACCUEIL ──
+    window.onload = () => {
+      clearContent();
+      setTitle('Bienvenue');
+      createCard('Voir les classes', () => showClasses());
+      animateCards();
+    };
+
+    // ── SÉRIES ──
+    function showClasses() {
+      clearContent();
+      setTitle('Choisir une série');
+      createBackButton();
+      createCard('Série S — Sciences', () => { historyStack.push(showClasses); showSeries('S'); }, 'serie-s', 'Seconde · Première · Terminale');
+      createCard('Série L — Littéraire', () => { historyStack.push(showClasses); showSeries('L'); }, 'serie-l', 'Seconde · Première · Terminale');
+      animateCards();
+    }
+
+    // ── CLASSES D'UNE SÉRIE ──
+    function showSeries(series) {
+      clearContent();
+      setTitle('Série ' + series);
+      createBackButton();
+      const classes = Object.keys(localData).filter(c =>
+        series === 'S'
+          ? (c.endsWith(' S') || /S\d$/.test(c))
+          : (c.endsWith(' L') || c === 'Première L' || c === 'Terminale L' || c === 'Seconde L')
+      );
+      classes.forEach(classe => {
+        createCard(classe, () => { historyStack.push(() => showSeries(series)); showSubjects(classe); });
+      });
+      animateCards();
+    }
+
+    // ── MATIÈRES ──
+    function showSubjects(classe) {
+      clearContent();
+      setTitle(classe);
+      createBackButton();
+      currentClasse = classe; currentSubject = null;
+      Object.keys(localData[classe] || {}).forEach(subject => {
+        createCard(subject, () => { historyStack.push(() => showSubjects(classe)); showSubjectMenu(subject); });
+      });
+      animateCards();
+    }
+
+    // ── MENU MATIÈRE ──
+    function showSubjectMenu(subject) {
+      clearContent();
+      setTitle(subject);
+      createBackButton();
+      currentSubject = subject;
+      ['Cours', 'Exercices', 'Devoirs', 'Compositions'].forEach(type => {
+        createCard(type, () => { historyStack.push(() => showSubjectMenu(subject)); showItems(type.toLowerCase()); });
+      });
+      animateCards();
+    }
+
+    // ── DOCUMENTS (local + Firebase) ──
+    async function showItems(type) {
+      clearContent();
+      const spin = document.createElement('div');
+      spin.className = 'spinner-wrap';
+      spin.innerHTML = '<div class="spinner"></div><p>Chargement…</p>';
+      contentDiv.appendChild(spin);
+
+      const localItems = localData[currentClasse]?.[currentSubject]?.[type] || [];
+      const fbItems = await getFirebaseDocs(currentClasse, currentSubject, type);
+
+      clearContent();
+      setTitle(type.charAt(0).toUpperCase() + type.slice(1));
+      createBackButton();
+
+      const all = [...localItems, ...fbItems];
+      if (!all.length) {
+        const v = document.createElement('div');
+        v.className = 'card vide';
+        v.innerHTML = `<span class="icon">📭</span><span class="label">Aucun contenu disponible</span>`;
+        contentDiv.appendChild(v);
+        return;
+      }
+
+      all.forEach((it, i) => {
+        const card = document.createElement('div');
+        card.className = 'card doc';
+        card.tabIndex = 0;
+        card.style.animationDelay = (i * 0.04) + 's';
+        const hasFichier = it.fichier && it.fichier.trim() !== '';
+        card.innerHTML = `
+          <span class="icon">📄</span>
+          <span class="label">${it.titre}${it.fb ? '<div><span class="badge-fb">🔥 En ligne</span></div>' : ''}</span>
+          <span class="arrow">${hasFichier ? '↗' : '⋯'}</span>
+        `;
+        if (hasFichier) {
+          card.onclick = () => window.open(it.fichier, '_blank');
+          card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') window.open(it.fichier, '_blank'); };
+        } else {
+          card.classList.add('vide');
+        }
+        contentDiv.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

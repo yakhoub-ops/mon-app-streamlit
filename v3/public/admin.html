@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin – Lycée Lajesi Babin Young</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Nunito:wght@400;600;700&display=swap');
+    :root {
+      --terracotta: #C1440E;
+      --or: #D4A017;
+      --indigo: #2C3E7A;
+      --indigo2: #1A2550;
+      --creme: #FAF3E0;
+      --sombre: #1A1208;
+      --card: #fff8ee;
+      --success: #2a7a2a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Nunito', sans-serif; background: var(--creme); color: var(--sombre); min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--indigo2) 0%, var(--indigo) 100%);
+    }
+    .login-box {
+      background: var(--creme); border-radius: 20px; padding: 44px 38px;
+      width: 360px; text-align: center;
+      border-top: 6px solid var(--or);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .login-logo {
+      width: 64px; height: 64px; background: var(--or); border-radius: 50%;
+      margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+    .login-box h1 { font-family: 'Cinzel', serif; font-size: 1.15rem; color: var(--indigo); margin-bottom: 4px; }
+    .login-box p { color: #888; font-size: 0.85rem; margin-bottom: 28px; }
+    .input-group { position: relative; margin-bottom: 14px; }
+    .input-group span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 1rem; }
+    .login-box input {
+      width: 100%; padding: 12px 14px 12px 38px;
+      border: 2px solid #ddd; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-size: 0.95rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--or); }
+    .btn-login {
+      width: 100%; padding: 13px; background: var(--terracotta); color: #fff;
+      border: none; border-radius: 10px; font-family: 'Cinzel', serif;
+      font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;
+      margin-top: 4px;
+    }
+    .btn-login:hover { background: #a33509; }
+    .btn-login:disabled { background: #ccc; cursor: not-allowed; }
+    #login-error { color: var(--terracotta); font-size: 0.85rem; margin-top: 12px; min-height: 20px; }
+
+    /* ── ADMIN PANEL ── */
+    #admin-panel { display: none; }
+    header {
+      background: var(--indigo2); padding: 14px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-left .logo { font-size: 1.3rem; }
+    header h1 { font-family: 'Cinzel', serif; color: var(--or); font-size: 1rem; }
+    header .user-email { color: rgba(250,243,224,0.5); font-size: 0.78rem; margin-top: 2px; }
+    .btn-logout {
+      background: transparent; border: 2px solid var(--or); color: var(--or);
+      padding: 8px 18px; border-radius: 8px; cursor: pointer;
+      font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 700;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: var(--or); color: var(--indigo); }
+
+    /* ── STATS ── */
+    .stats-bar {
+      max-width: 920px; margin: 24px auto 0; padding: 0 20px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    }
+    .stat-card {
+      background: #fff; border-radius: 12px; padding: 16px;
+      text-align: center; border-bottom: 3px solid var(--or);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--indigo); }
+    .stat-card .lbl { font-size: 0.75rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── CONTAINER ── */
+    .container { max-width: 920px; margin: 24px auto 60px; padding: 0 20px; }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--card); border-radius: 16px; padding: 28px;
+      border-left: 5px solid var(--or); margin-bottom: 28px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    }
+    .form-card h2 { font-family: 'Cinzel', serif; color: var(--indigo); font-size: 1.05rem; margin-bottom: 20px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    label { font-size: 0.8rem; font-weight: 700; color: #555; display: block; margin-bottom: 4px; }
+    select, input[type=text], input[type=url] {
+      width: 100%; padding: 10px 12px; border: 2px solid #e0d5c5;
+      border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.93rem;
+      background: #fff; outline: none; transition: border-color 0.2s;
+    }
+    select:focus, input[type=text]:focus, input[type=url]:focus { border-color: var(--or); }
+    .form-actions { display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+    .btn-add {
+      padding: 12px 28px; background: var(--terracotta); color: #fff;
+      border: none; border-radius: 10px; font-family: 'Cinzel', serif;
+      font-size: 0.93rem; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-add:hover { background: #a33509; }
+    .btn-reset {
+      padding: 12px 20px; background: transparent; color: #888;
+      border: 2px solid #ddd; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-size: 0.9rem; cursor: pointer;
+    }
+    .btn-reset:hover { border-color: #bbb; color: #555; }
+    #msg {
+      font-size: 0.88rem; font-weight: 700; padding: 10px 16px;
+      border-radius: 8px; display: none;
+    }
+    #msg.success { background: #e8f5e9; color: var(--success); }
+    #msg.error { background: #fdecea; color: var(--terracotta); }
+
+    /* ── LISTE CARD ── */
+    .liste-card {
+      background: var(--card); border-radius: 16px; padding: 24px;
+      border-left: 5px solid var(--terracotta);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+    }
+    .liste-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .liste-header h2 { font-family: 'Cinzel', serif; color: var(--indigo); font-size: 1.05rem; }
+    .filtres { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .filtres select { width: auto; flex: 1; min-width: 130px; }
+    #liste-docs { display: flex; flex-direction: column; gap: 10px; }
+    .doc-item {
+      background: #fff; border-radius: 12px; padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      border: 1px solid #e8dfd0; gap: 12px;
+      transition: box-shadow 0.2s;
+    }
+    .doc-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-titre { font-weight: 700; font-size: 0.93rem; color: var(--sombre); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-meta { font-size: 0.76rem; color: #888; margin-top: 3px; }
+    .doc-fichier { font-size: 0.72rem; color: var(--indigo); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; }
+    .doc-type {
+      font-size: 0.72rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 20px; background: var(--or); color: #fff; white-space: nowrap;
+    }
+    .doc-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-edit {
+      background: transparent; border: 2px solid var(--indigo); color: var(--indigo);
+      padding: 6px 12px; border-radius: 8px; cursor: pointer;
+      font-size: 0.82rem; font-weight: 700; white-space: nowrap; transition: all 0.2s;
+    }
+    .btn-edit:hover { background: var(--indigo); color: #fff; }
+    .btn-del {
+      background: transparent; border: 2px solid var(--terracotta); color: var(--terracotta);
+      padding: 6px 12px; border-radius: 8px; cursor: pointer;
+      font-size: 0.82rem; font-weight: 700; white-space: nowrap; transition: all 0.2s;
+    }
+    .btn-del:hover { background: var(--terracotta); color: #fff; }
+    #loading { text-align: center; color: #888; padding: 30px; }
+    .spinner {
+      width: 30px; height: 30px; border: 3px solid #e8dfd0;
+      border-top-color: var(--terracotta); border-radius: 50%;
+      animation: spin 0.7s linear infinite; margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 40px; color: #aaa; }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* ── MODAL ÉDITION ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(26,37,80,0.6);
+      display: none; align-items: center; justify-content: center;
+      z-index: 999; padding: 20px; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--creme); border-radius: 20px; padding: 32px;
+      width: 100%; max-width: 520px;
+      border-top: 5px solid var(--or);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal h2 { font-family: 'Cinzel', serif; color: var(--indigo); font-size: 1.05rem; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 22px; justify-content: flex-end; }
+    .btn-save {
+      padding: 11px 24px; background: var(--indigo); color: #fff;
+      border: none; border-radius: 10px; font-family: 'Cinzel', serif;
+      font-size: 0.9rem; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-save:hover { background: var(--indigo2); }
+    .btn-cancel {
+      padding: 11px 20px; background: transparent; color: #888;
+      border: 2px solid #ddd; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-size: 0.9rem; cursor: pointer;
+    }
+    .btn-cancel:hover { border-color: #bbb; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid .full { grid-column: 1; }
+      .doc-fichier { display: none; }
+      header h1 { font-size: 0.85rem; }
+      .login-box { width: 100%; padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ÉCRAN DE CONNEXION -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🔐</div>
+    <h1>Espace Administration</h1>
+    <p>Lycée Lajesi Babin Young</p>
+    <div class="input-group">
+      <span>✉️</span>
+      <input type="email" id="email" placeholder="Email administrateur" autocomplete="email"/>
+    </div>
+    <div class="input-group">
+      <span>🔑</span>
+      <input type="password" id="pwd" placeholder="Mot de passe" autocomplete="current-password"/>
+    </div>
+    <button class="btn-login" id="btn-login" onclick="login()">Connexion</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- PANNEAU ADMIN -->
+<div id="admin-panel">
+  <header>
+    <div class="header-left">
+      <span class="logo">⚙️</span>
+      <div>
+        <h1>Administration – Lycée Lajesi Babin Young</h1>
+        <div class="user-email" id="user-email"></div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card"><div class="num" id="stat-total">–</div><div class="lbl">Total docs</div></div>
+    <div class="stat-card"><div class="num" id="stat-cours">–</div><div class="lbl">Cours</div></div>
+    <div class="stat-card"><div class="num" id="stat-exercices">–</div><div class="lbl">Exercices</div></div>
+    <div class="stat-card"><div class="num" id="stat-devoirs">–</div><div class="lbl">Devoirs</div></div>
+  </div>
+
+  <div class="container">
+
+    <!-- FORMULAIRE AJOUT -->
+    <div class="form-card">
+      <h2>➕ Ajouter un document</h2>
+      <div class="form-grid">
+        <div>
+          <label>Classe</label>
+          <select id="f-classe">
+            <option value="">-- Choisir --</option>
+            <option>Seconde S</option><option>Seconde L</option>
+            <option>Première S1</option><option>Première S2</option><option>Première L</option>
+            <option>Terminale S1</option><option>Terminale S2</option><option>Terminale L</option>
+          </select>
+        </div>
+        <div>
+          <label>Matière</label>
+          <select id="f-matiere">
+            <option value="">-- Choisir --</option>
+            <option>Français</option><option>Math</option><option>Anglais</option>
+            <option>HG</option><option>PC</option><option>SVT</option>
+          </select>
+        </div>
+        <div>
+          <label>Type de document</label>
+          <select id="f-type">
+            <option value="cours">Cours</option>
+            <option value="exercices">Exercices</option>
+            <option value="devoirs">Devoirs</option>
+            <option value="compositions">Compositions</option>
+          </select>
+        </div>
+        <div>
+          <label>Série</label>
+          <select id="f-serie">
+            <option value="S">Série S</option>
+            <option value="L">Série L</option>
+          </select>
+        </div>
+        <div class="full">
+          <label>Titre du document</label>
+          <input type="text" id="f-titre" placeholder="Ex: Chapitre 1 – Les fonctions"/>
+        </div>
+        <div class="full">
+          <label>Lien du fichier (URL Google Drive ou autre)</label>
+          <input type="url" id="f-fichier" placeholder="https://drive.google.com/file/d/..."/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-add" onclick="ajouterDoc()">✚ Ajouter</button>
+        <button class="btn-reset" onclick="resetForm()">Réinitialiser</button>
+        <div id="msg"></div>
+      </div>
+    </div>
+
+    <!-- LISTE DES DOCUMENTS -->
+    <div class="liste-card">
+      <div class="liste-header">
+        <h2>📋 Documents Firebase (<span id="count-visible">0</span>)</h2>
+      </div>
+      <div class="filtres">
+        <select id="fl-classe" onchange="chargerDocs()">
+          <option value="">Toutes les classes</option>
+          <option>Seconde S</option><option>Seconde L</option>
+          <option>Première S1</option><option>Première S2</option><option>Première L</option>
+          <option>Terminale S1</option><option>Terminale S2</option><option>Terminale L</option>
+        </select>
+        <select id="fl-matiere" onchange="chargerDocs()">
+          <option value="">Toutes les matières</option>
+          <option>Français</option><option>Math</option><option>Anglais</option>
+          <option>HG</option><option>PC</option><option>SVT</option>
+        </select>
+        <select id="fl-type" onchange="chargerDocs()">
+          <option value="">Tous les types</option>
+          <option value="cours">Cours</option>
+          <option value="exercices">Exercices</option>
+          <option value="devoirs">Devoirs</option>
+          <option value="compositions">Compositions</option>
+        </select>
+      </div>
+      <div id="loading">
+        <div class="spinner"></div>
+        <p>Chargement des documents…</p>
+      </div>
+      <div id="liste-docs"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL ÉDITION -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <h2>✏️ Modifier le document</h2>
+    <input type="hidden" id="edit-id"/>
+    <div class="form-grid">
+      <div>
+        <label>Classe</label>
+        <select id="edit-classe">
+          <option value="">-- Choisir --</option>
+          <option>Seconde S</option><option>Seconde L</option>
+          <option>Première S1</option><option>Première S2</option><option>Première L</option>
+          <option>Terminale S1</option><option>Terminale S2</option><option>Terminale L</option>
+        </select>
+      </div>
+      <div>
+        <label>Matière</label>
+        <select id="edit-matiere">
+          <option value="">-- Choisir --</option>
+          <option>Français</option><option>Math</option><option>Anglais</option>
+          <option>HG</option><option>PC</option><option>SVT</option>
+        </select>
+      </div>
+      <div>
+        <label>Type</label>
+        <select id="edit-type">
+          <option value="cours">Cours</option>
+          <option value="exercices">Exercices</option>
+          <option value="devoirs">Devoirs</option>
+          <option value="compositions">Compositions</option>
+        </select>
+      </div>
+      <div>
+        <label>Série</label>
+        <select id="edit-serie">
+          <option value="S">Série S</option>
+          <option value="L">Série L</option>
+        </select>
+      </div>
+      <div class="full">
+        <label>Titre du document</label>
+        <input type="text" id="edit-titre" placeholder="Titre du document"/>
+      </div>
+      <div class="full">
+        <label>Lien du fichier</label>
+        <input type="url" id="edit-fichier" placeholder="https://drive.google.com/..."/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fermerModal()">Annuler</button>
+      <button class="btn-save" onclick="sauvegarderEdit()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBelpxrNr6thF8Yl3Tz4k0Fu834p-8qTsE",
+    authDomain: "lycee-3f0d6.firebaseapp.com",
+    projectId: "lycee-3f0d6",
+    storageBucket: "lycee-3f0d6.firebasestorage.app",
+    messagingSenderId: "1046610989209",
+    appId: "1:1046610989209:web:9c446e52e52f09765ba808",
+    measurementId: "G-N7MJ6WXD09"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  /* ── AUTH ── */
+  window.login = async () => {
+    const email = document.getElementById('email').value.trim();
+    const pwd   = document.getElementById('pwd').value;
+    const errEl = document.getElementById('login-error');
+    const btn   = document.getElementById('btn-login');
+    errEl.textContent = '';
+    if (!email || !pwd) { errEl.textContent = 'Veuillez remplir tous les champs.'; return; }
+    btn.disabled = true; btn.textContent = 'Connexion…';
+    try {
+      await signInWithEmailAndPassword(auth, email, pwd);
+    } catch(e) {
+      btn.disabled = false; btn.textContent = 'Connexion';
+      errEl.textContent = 'Email ou mot de passe incorrect.';
+    }
+  };
+
+  window.logout = async () => {
+    if (confirm('Voulez-vous vraiment vous déconnecter ?')) await signOut(auth);
+  };
+
+  document.getElementById('pwd').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.login();
+  });
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      document.getElementById('user-email').textContent = user.email;
+      chargerDocs();
+    } else {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('admin-panel').style.display = 'none';
+      document.getElementById('btn-login').disabled = false;
+      document.getElementById('btn-login').textContent = 'Connexion';
+    }
+  });
+
+  /* ── AFFICHER MESSAGE ── */
+  function showMsg(text, type = 'success') {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = type;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 3500);
+  }
+
+  /* ── RESET FORMULAIRE ── */
+  window.resetForm = () => {
+    ['f-classe','f-matiere','f-titre','f-fichier'].forEach(id => {
+      const el = document.getElementById(id);
+      el.value = el.tagName === 'SELECT' ? '' : '';
+    });
+    document.getElementById('f-type').value = 'cours';
+    document.getElementById('f-serie').value = 'S';
+  };
+
+  /* ── AJOUTER ── */
+  window.ajouterDoc = async () => {
+    const classe   = document.getElementById('f-classe').value;
+    const matiere  = document.getElementById('f-matiere').value;
+    const type     = document.getElementById('f-type').value;
+    const serie    = document.getElementById('f-serie').value;
+    const titre    = document.getElementById('f-titre').value.trim();
+    const fichier  = document.getElementById('f-fichier').value.trim();
+    if (!classe || !matiere || !titre) {
+      showMsg('⚠️ Classe, matière et titre sont obligatoires.', 'error'); return;
+    }
+    try {
+      await addDoc(collection(db, 'documents'), {
+        classe, matiere, type, serie, titre, fichier,
+        dateAjout: new Date().toISOString()
+      });
+      document.getElementById('f-titre').value = '';
+      document.getElementById('f-fichier').value = '';
+      showMsg('✅ Document ajouté avec succès !', 'success');
+      chargerDocs();
+    } catch(e) {
+      showMsg('❌ Erreur lors de l\'ajout : ' + e.message, 'error');
+    }
+  };
+
+  /* ── CHARGER DOCS ── */
+  window.chargerDocs = async () => {
+    const liste   = document.getElementById('liste-docs');
+    const loading = document.getElementById('loading');
+    loading.style.display = 'block';
+    liste.innerHTML = '';
+
+    try {
+      const snap = await getDocs(collection(db, 'documents'));
+      const flClasse  = document.getElementById('fl-classe').value;
+      const flMatiere = document.getElementById('fl-matiere').value;
+      const flType    = document.getElementById('fl-type').value;
+
+      const docs = [];
+      snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+      docs.sort((a, b) => (b.dateAjout || '').localeCompare(a.dateAjout || ''));
+
+      /* Statistiques */
+      document.getElementById('stat-total').textContent = docs.length;
+      document.getElementById('stat-cours').textContent = docs.filter(d => d.type === 'cours').length;
+      document.getElementById('stat-exercices').textContent = docs.filter(d => d.type === 'exercices').length;
+      document.getElementById('stat-devoirs').textContent = docs.filter(d => d.type === 'devoirs').length;
+
+      const filtered = docs.filter(d => {
+        if (flClasse  && d.classe   !== flClasse)  return false;
+        if (flMatiere && d.matiere  !== flMatiere) return false;
+        if (flType    && d.type     !== flType)    return false;
+        return true;
+      });
+
+      document.getElementById('count-visible').textContent = filtered.length;
+      loading.style.display = 'none';
+
+      if (!filtered.length) {
+        liste.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>Aucun document trouvé.</p></div>`;
+        return;
+      }
+
+      const typeBadge = { cours: '#2C3E7A', exercices: '#C1440E', devoirs: '#2a7a2a', compositions: '#7a2a2a' };
+
+      filtered.forEach(data => {
+        const item = document.createElement('div');
+        item.className = 'doc-item';
+        const couleur = typeBadge[data.type] || '#888';
+        const lienHtml = data.fichier
+          ? `<a href="${data.fichier}" target="_blank" class="doc-fichier" style="color:var(--indigo)">🔗 ${data.fichier.substring(0, 60)}…</a>`
+          : `<span class="doc-fichier" style="color:#ccc">Pas de lien</span>`;
+        item.innerHTML = `
+          <div class="doc-info">
+            <div class="doc-titre">${data.titre}</div>
+            <div class="doc-meta">${data.classe} · ${data.matiere} · ${data.dateAjout ? new Date(data.dateAjout).toLocaleDateString('fr-FR') : ''}</div>
+            ${lienHtml}
+          </div>
+          <span class="doc-type" style="background:${couleur}">${data.type}</span>
+          <div class="doc-actions">
+            <button class="btn-edit" onclick="ouvrirEdit('${data.id}')">✏️ Modifier</button>
+            <button class="btn-del" onclick="supprimerDoc('${data.id}', '${data.titre.replace(/'/g,"\\'")}')">🗑️ Supprimer</button>
+          </div>
+        `;
+        liste.appendChild(item);
+      });
+
+      /* Stocker les données pour le modal */
+      window._docsCache = {};
+      docs.forEach(d => window._docsCache[d.id] = d);
+
+    } catch(e) {
+      loading.style.display = 'none';
+      liste.innerHTML = `<div class="empty-state"><p style="color:var(--terracotta)">❌ Erreur : ${e.message}</p></div>`;
+    }
+  };
+
+  /* ── SUPPRIMER ── */
+  window.supprimerDoc = async (id, titre) => {
+    if (!confirm(`Supprimer définitivement :\n"${titre}" ?`)) return;
+    try {
+      await deleteDoc(doc(db, 'documents', id));
+      chargerDocs();
+    } catch(e) {
+      alert('Erreur lors de la suppression : ' + e.message);
+    }
+  };
+
+  /* ── OUVRIR MODAL ÉDITION ── */
+  window.ouvrirEdit = (id) => {
+    const data = window._docsCache?.[id];
+    if (!data) return;
+    document.getElementById('edit-id').value      = id;
+    document.getElementById('edit-classe').value  = data.classe   || '';
+    document.getElementById('edit-matiere').value = data.matiere  || '';
+    document.getElementById('edit-type').value    = data.type     || 'cours';
+    document.getElementById('edit-serie').value   = data.serie    || 'S';
+    document.getElementById('edit-titre').value   = data.titre    || '';
+    document.getElementById('edit-fichier').value = data.fichier  || '';
+    document.getElementById('modal-edit').classList.add('open');
+  };
+
+  /* ── FERMER MODAL ── */
+  window.fermerModal = () => {
+    document.getElementById('modal-edit').classList.remove('open');
+  };
+
+  document.getElementById('modal-edit').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-edit')) fermerModal();
+  });
+
+  /* ── SAUVEGARDER ÉDITION ── */
+  window.sauvegarderEdit = async () => {
+    const id      = document.getElementById('edit-id').value;
+    const classe  = document.getElementById('edit-classe').value;
+    const matiere = document.getElementById('edit-matiere').value;
+    const type    = document.getElementById('edit-type').value;
+    const serie   = document.getElementById('edit-serie').value;
+    const titre   = document.getElementById('edit-titre').value.trim();
+    const fichier = document.getElementById('edit-fichier').value.trim();
+    if (!classe || !matiere || !titre) {
+      alert('Classe, matière et titre sont obligatoires.'); return;
+    }
+    try {
+      await updateDoc(doc(db, 'documents', id), {
+        classe, matiere, type, serie, titre, fichier,
+        dateMaj: new Date().toISOString()
+      });
+      fermerModal();
+      chargerDocs();
+      showMsg('✅ Document modifié avec succès !', 'success');
+    } catch(e) {
+      alert('Erreur lors de la modification : ' + e.message);
+    }
+  };
+</script>
+</body>
+</html>
