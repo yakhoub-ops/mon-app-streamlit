@@ -1,0 +1,13 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# Sécuriser le dossier uploads
+<FilesMatch "\.(php|phtml|php3|php4|php5|pl|py|jsp|asp|sh|cgi)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Redirection HTTPS (décommenter en production)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
