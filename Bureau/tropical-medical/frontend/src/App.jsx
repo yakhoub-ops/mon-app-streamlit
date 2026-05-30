@@ -15,16 +15,20 @@ import MedecinFichePatient     from './pages/medecin/FichePatient';
 import MedecinNouvelleConsult  from './pages/medecin/NouvelleConsultation';
 import MedecinNouvelleOrdo     from './pages/medecin/NouvelleOrdonnance';
 import MedecinTeleconsultation from './pages/medecin/Teleconsultation';
+import MedecinUrgences          from './pages/medecin/Urgences';
+import MedecinFactures           from './pages/medecin/Factures';
 
 import PatientDashboard   from './pages/patient/Dashboard';
 import PatientMesRdv      from './pages/patient/MesRdv';
 import PatientMonDossier  from './pages/patient/MonDossier';
 import PatientMesFactures from './pages/patient/MesFactures';
+import PatientActualites  from './pages/patient/Actualites';
 
 import RecepDashboard   from './pages/receptionniste/Dashboard';
 import RecepFileAttente from './pages/receptionniste/FileAttente';
 import RecepUrgences    from './pages/receptionniste/Urgences';
 import RecepFacturation from './pages/receptionniste/Facturation';
+import RecepScannerQR   from './pages/receptionniste/ScannerQR';
 
 import PharmaDashboard   from './pages/pharmacien/Dashboard';
 import PharmaStock       from './pages/pharmacien/Stock';
@@ -108,6 +112,8 @@ export default function App() {
             element={<PrivateRoute roles={['patient']}><Layout><PatientMonDossier /></Layout></PrivateRoute>} />
           <Route path="/patient/factures"
             element={<PrivateRoute roles={['patient']}><Layout><PatientMesFactures /></Layout></PrivateRoute>} />
+          <Route path="/patient/actualites"
+            element={<PrivateRoute roles={['patient']}><Layout><PatientActualites /></Layout></PrivateRoute>} />
 
           {/* Réceptionniste */}
           <Route path="/receptionniste/dashboard"
@@ -118,6 +124,8 @@ export default function App() {
             element={<PrivateRoute roles={['receptionniste']}><Layout><RecepUrgences /></Layout></PrivateRoute>} />
           <Route path="/receptionniste/facturation"
             element={<PrivateRoute roles={['receptionniste']}><Layout><RecepFacturation /></Layout></PrivateRoute>} />
+          <Route path="/receptionniste/scanner"
+            element={<PrivateRoute roles={['receptionniste']}><Layout><RecepScannerQR /></Layout></PrivateRoute>} />
 
           {/* Pharmacien */}
           <Route path="/pharmacien/dashboard"
@@ -127,9 +135,13 @@ export default function App() {
           <Route path="/pharmacien/ordonnances"
             element={<PrivateRoute roles={['pharmacien']}><Layout><PharmaOrdonnances /></Layout></PrivateRoute>} />
 
-          {/* Médecin — Téléconsultation */}
+          {/* Médecin — Téléconsultation, Urgences, Factures */}
           <Route path="/medecin/teleconsultation"
             element={<PrivateRoute roles={['medecin']}><Layout><MedecinTeleconsultation /></Layout></PrivateRoute>} />
+          <Route path="/medecin/urgences"
+            element={<PrivateRoute roles={['medecin']}><Layout><MedecinUrgences /></Layout></PrivateRoute>} />
+          <Route path="/medecin/factures"
+            element={<PrivateRoute roles={['medecin']}><Layout><MedecinFactures /></Layout></PrivateRoute>} />
 
           {/* Admin */}
           <Route path="/admin/assurances"

@@ -4,23 +4,27 @@ import LogoPlaceholder from '../ui/LogoPlaceholder';
 
 const NAV = {
   medecin: [
-    { label: 'Tableau de bord',    path: '/medecin/dashboard',        icon: '🏥' },
-    { label: 'Mes rendez-vous',    path: '/medecin/rdv',              icon: '📅' },
-    { label: '+ Consultation',     path: '/medecin/consultation/new', icon: '📋' },
-    { label: '+ Ordonnance',       path: '/medecin/ordonnance/new',   icon: '💊' },
-    { label: 'Téléconsultation',   path: '/medecin/teleconsultation', icon: '📹' },
+    { label: 'Tableau de bord',  path: '/medecin/dashboard',        icon: '🏥' },
+    { label: 'Mes rendez-vous',  path: '/medecin/rdv',              icon: '📅' },
+    { label: '+ Consultation',   path: '/medecin/consultation/new', icon: '📋' },
+    { label: '+ Ordonnance',     path: '/medecin/ordonnance/new',   icon: '💊' },
+    { label: 'Téléconsultation', path: '/medecin/teleconsultation', icon: '📹' },
+    { label: 'Urgences',         path: '/medecin/urgences',         icon: '🚨' },
+    { label: 'Factures',         path: '/medecin/factures',         icon: '💰' },
   ],
   patient: [
-    { label: 'Tableau de bord', path: '/patient/dashboard', icon: '🏠' },
-    { label: 'Mes rendez-vous', path: '/patient/rdv',       icon: '📅' },
-    { label: 'Mon dossier',     path: '/patient/dossier',   icon: '📋' },
-    { label: 'Mes factures',    path: '/patient/factures',  icon: '💰' },
+    { label: 'Tableau de bord', path: '/patient/dashboard',  icon: '🏠' },
+    { label: 'Mes rendez-vous', path: '/patient/rdv',        icon: '📅' },
+    { label: 'Mon dossier',     path: '/patient/dossier',    icon: '📋' },
+    { label: 'Mes factures',    path: '/patient/factures',   icon: '💰' },
+    { label: 'Actualités',      path: '/patient/actualites', icon: '📰' },
   ],
   receptionniste: [
     { label: 'Tableau de bord', path: '/receptionniste/dashboard',    icon: '🏠' },
     { label: "File d'attente",  path: '/receptionniste/file-attente', icon: '🧍' },
     { label: 'Urgences',        path: '/receptionniste/urgences',     icon: '🚨' },
     { label: 'Facturation',     path: '/receptionniste/facturation',  icon: '💰' },
+    { label: 'Scanner QR',      path: '/receptionniste/scanner',      icon: '📷' },
   ],
   pharmacien: [
     { label: 'Tableau de bord', path: '/pharmacien/dashboard',   icon: '🏠' },

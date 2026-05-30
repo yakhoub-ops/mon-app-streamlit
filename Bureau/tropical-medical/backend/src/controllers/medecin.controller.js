@@ -95,9 +95,11 @@ exports.updateDisponibilites = async (req, res) => {
 
     await conn.query('DELETE FROM disponibilite WHERE id_medecin = ?', [id]);
     if (disponibilites?.length > 0) {
-      const vals = disponibilites.map(d => [id, d.jour_semaine, d.heure_debut, d.heure_fin]);
+      const vals = disponibilites.map(d => [
+        id, d.jour_semaine, d.heure_debut, d.heure_fin, d.duree_slot || 30,
+      ]);
       await conn.query(
-        'INSERT INTO disponibilite (id_medecin, jour_semaine, heure_debut, heure_fin) VALUES ?',
+        'INSERT INTO disponibilite (id_medecin, jour_semaine, heure_debut, heure_fin, duree_slot) VALUES ?',
         [vals]
       );
     }
@@ -121,10 +123,14 @@ exports.getCreneaux = async (req, res) => {
     const sqlDay = jsDay === 0 ? 7 : jsDay;               // 1=Lun … 7=Dim
 
     const [dispos] = await pool.query(
-      'SELECT heure_debut, heure_fin FROM disponibilite WHERE id_medecin = ? AND jour_semaine = ?',
+      'SELECT heure_debut, heure_fin, duree_slot FROM disponibilite WHERE id_medecin = ? AND jour_semaine = ?',
       [id, sqlDay]
     );
     if (!dispos.length) return res.json([]);
+
+    const now = new Date();
+    const isToday = date === now.toISOString().slice(0, 10);
+    const nowMin  = isToday ? now.getHours() * 60 + now.getMinutes() : 0;
 
     const [booked] = await pool.query(`
       SELECT TIME_FORMAT(TIME(date_rdv), '%H:%i') AS heure
@@ -135,12 +141,14 @@ exports.getCreneaux = async (req, res) => {
 
     const slots = [];
     for (const d of dispos) {
+      const duree = d.duree_slot || 30;
       let cur = timeToMin(d.heure_debut);
       const end = timeToMin(d.heure_fin);
-      while (cur + 30 <= end) {
+      while (cur + duree <= end) {
         const slot = minToTime(cur);
-        if (!bookedSet.has(slot)) slots.push(slot);
-        cur += 30;
+        // Ne proposer que les créneaux futurs
+        if (cur > nowMin && !bookedSet.has(slot)) slots.push(slot);
+        cur += duree;
       }
     }
     res.json(slots);

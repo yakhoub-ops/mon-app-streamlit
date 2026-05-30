@@ -30,6 +30,7 @@ app.use('/api/assurances',        require('./routes/assurance.routes'));
 app.use('/api/interactions',      require('./routes/interaction.routes'));
 app.use('/api/teleconsultations', require('./routes/teleconsultation.routes'));
 app.use('/api/liste-attente-rdv', require('./routes/listeAttenteRdv.routes'));
+app.use('/api/actualites',        require('./routes/actualite.routes'));
 
 // Cron — rappels automatiques
 require('./cron');

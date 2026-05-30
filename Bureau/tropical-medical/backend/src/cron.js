@@ -9,6 +9,7 @@
  */
 
 const cron = require('node-cron');
+const { genererDepuisStock } = require('./controllers/actualite.controller');
 
 const pool    = require('./config/db');
 const { notify, notifyRole } = require('./utils/notify');
@@ -87,5 +88,8 @@ cron.schedule('0 9 * * *', rappelsFactures);
 
 // Alerte stocks — tous les jours à 8h
 cron.schedule('0 8 * * *', alerteStocks);
+
+// Générer actualités depuis stock — tous les jours à 7h30
+cron.schedule('30 7 * * *', genererDepuisStock);
 
 module.exports = {};

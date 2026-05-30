@@ -66,7 +66,7 @@ exports.getOne = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const { role, id: id_util } = req.user;
-    let { id_patient, id_medecin, date_rdv, heure_rdv, motif, notes } = req.body;
+    let { id_patient, id_medecin, date_rdv, heure_rdv, motif, notes, type_rdv } = req.body;
 
     if (role === 'patient') {
       const pid = await getPatientId(id_util);
@@ -84,9 +84,9 @@ exports.create = async (req, res) => {
       return res.status(409).json({ error: 'Créneau déjà occupé pour ce médecin' });
 
     const [result] = await pool.query(
-      `INSERT INTO rdv (id_patient, id_medecin, date_rdv, motif, notes, statut)
-       VALUES (?, ?, ?, ?, ?, 'en_attente')`,
-      [id_patient, id_medecin, date_rdv, motif || null, notes || null]
+      `INSERT INTO rdv (id_patient, id_medecin, date_rdv, motif, notes, statut, type_rdv)
+       VALUES (?, ?, ?, ?, ?, 'en_attente', ?)`,
+      [id_patient, id_medecin, date_rdv, motif || null, notes || null, type_rdv || 'presentiel']
     );
     res.status(201).json({ message: 'RDV créé', id_rdv: result.insertId });
 
