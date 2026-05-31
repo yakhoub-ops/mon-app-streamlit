@@ -32,6 +32,8 @@ app.use('/api/teleconsultations', require('./routes/teleconsultation.routes'));
 app.use('/api/liste-attente-rdv', require('./routes/listeAttenteRdv.routes'));
 app.use('/api/actualites',        require('./routes/actualite.routes'));
 
+app.use('/api/utilisateurs',      require('./routes/utilisateur.routes'));
+
 // Cron — rappels automatiques
 require('./cron');
 

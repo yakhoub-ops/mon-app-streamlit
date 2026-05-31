@@ -39,6 +39,7 @@ import PrintOrdonnance from './pages/PrintOrdonnance';
 import PrintFacture    from './pages/PrintFacture';
 
 // Pages admin
+import AdminDashboard    from './pages/admin/Dashboard';
 import AdminAssurances   from './pages/admin/Assurances';
 import AdminInteractions from './pages/admin/Interactions';
 
@@ -144,6 +145,8 @@ export default function App() {
             element={<PrivateRoute roles={['medecin']}><Layout><MedecinFactures /></Layout></PrivateRoute>} />
 
           {/* Admin */}
+          <Route path="/admin/dashboard"
+            element={<PrivateRoute roles={['admin']}><Layout><AdminDashboard /></Layout></PrivateRoute>} />
           <Route path="/admin/assurances"
             element={<PrivateRoute roles={['admin']}><Layout><AdminAssurances /></Layout></PrivateRoute>} />
           <Route path="/admin/interactions"

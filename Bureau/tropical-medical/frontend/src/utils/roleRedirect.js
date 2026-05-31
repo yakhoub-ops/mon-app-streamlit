@@ -4,7 +4,7 @@ export const getDashboardByRole = (role) => {
     patient:        '/patient/dashboard',
     receptionniste: '/receptionniste/dashboard',
     pharmacien:     '/pharmacien/dashboard',
-    admin:          '/admin/assurances',
+    admin:          '/admin/dashboard',
   };
   return routes[role] || '/login';
 };

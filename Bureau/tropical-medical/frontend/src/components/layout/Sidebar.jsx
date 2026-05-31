@@ -32,6 +32,7 @@ const NAV = {
     { label: 'Ordonnances',     path: '/pharmacien/ordonnances', icon: '💊' },
   ],
   admin: [
+    { label: 'Tableau de bord',         path: '/admin/dashboard',    icon: '🏠' },
     { label: 'Mutuelles / Assurances',  path: '/admin/assurances',   icon: '🏦' },
     { label: 'Interactions médic.',     path: '/admin/interactions', icon: '⚗️' },
   ],
