@@ -1,83 +1,58 @@
-const pool = require('../config/db');
+const prisma = require('../config/prisma');
+
+const include = {
+  medicament_a: true,
+  medicament_b: true,
+};
 
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT i.*,
-        ma.nom AS nom_medicament_a, ma.dci AS dci_a,
-        mb.nom AS nom_medicament_b, mb.dci AS dci_b
-      FROM interaction_medicamenteuse i
-      JOIN medicament ma ON i.id_medicament_a = ma.id_medicament
-      JOIN medicament mb ON i.id_medicament_b = mb.id_medicament
-      ORDER BY FIELD(i.niveau, 'contrindication', 'eleve', 'modere', 'faible')
-    `);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const list = await prisma.interactionMedicamenteuse.findMany({ include });
+    res.json(list);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
-// RG13 — Vérifier les interactions entre une liste de médicaments
-exports.checker = async (req, res) => {
+exports.check = async (req, res) => {
   try {
-    const { ids_medicaments } = req.body;
-    if (!Array.isArray(ids_medicaments) || ids_medicaments.length < 2)
-      return res.json({ interactions: [], bloquant: false });
-
-    const ph = ids_medicaments.map(() => '?').join(',');
-    const [rows] = await pool.query(`
-      SELECT i.*,
-        ma.nom AS nom_medicament_a, mb.nom AS nom_medicament_b
-      FROM interaction_medicamenteuse i
-      JOIN medicament ma ON i.id_medicament_a = ma.id_medicament
-      JOIN medicament mb ON i.id_medicament_b = mb.id_medicament
-      WHERE i.id_medicament_a IN (${ph}) AND i.id_medicament_b IN (${ph})
-      ORDER BY FIELD(i.niveau, 'contrindication', 'eleve', 'modere', 'faible')
-    `, [...ids_medicaments, ...ids_medicaments]);
-
-    const bloquant = rows.some(r => r.niveau === 'contrindication' || r.niveau === 'eleve');
-    res.json({ interactions: rows, bloquant });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const ids = req.body.medicaments; // tableau d'id_medicament
+    const interactions = [];
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const inter = await prisma.interactionMedicamenteuse.findFirst({
+          where: {
+            OR: [
+              { id_medicament_a: ids[i], id_medicament_b: ids[j] },
+              { id_medicament_a: ids[j], id_medicament_b: ids[i] },
+            ],
+          },
+          include,
+        });
+        if (inter) interactions.push(inter);
+      }
+    }
+    res.json(interactions);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
 exports.create = async (req, res) => {
   try {
-    const { id_medicament_a, id_medicament_b, niveau, description } = req.body;
-    if (!id_medicament_a || !id_medicament_b)
-      return res.status(400).json({ error: 'Les deux médicaments sont requis' });
-
-    // Assurer l'ordre canonique (id plus petit en premier) pour éviter les doublons inversés
-    const [a, b] = Number(id_medicament_a) < Number(id_medicament_b)
-      ? [id_medicament_a, id_medicament_b]
-      : [id_medicament_b, id_medicament_a];
-
-    const [r] = await pool.query(
-      'INSERT INTO interaction_medicamenteuse (id_medicament_a, id_medicament_b, niveau, description) VALUES (?, ?, ?, ?)',
-      [a, b, niveau || 'modere', description || null]
-    );
-    res.status(201).json({ message: 'Interaction enregistrée', id_interaction: r.insertId });
-  } catch (err) {
-    if (err.code === 'ER_DUP_ENTRY')
-      return res.status(409).json({ error: 'Interaction déjà enregistrée pour ces deux médicaments' });
-    res.status(500).json({ error: err.message });
+    const i = await prisma.interactionMedicamenteuse.create({ data: req.body, include });
+    res.status(201).json(i);
+  } catch (e) {
+    if (e.code === 'P2002') return res.status(409).json({ message: 'Interaction déjà enregistrée' });
+    res.status(500).json({ message: e.message });
   }
-};
-
-exports.update = async (req, res) => {
-  try {
-    const { niveau, description } = req.body;
-    const sets = [];
-    const vals = [];
-    if (niveau      !== undefined) { sets.push('niveau = ?');      vals.push(niveau); }
-    if (description !== undefined) { sets.push('description = ?'); vals.push(description); }
-    if (!sets.length) return res.status(400).json({ error: 'Rien à modifier' });
-    vals.push(req.params.id);
-    await pool.query(`UPDATE interaction_medicamenteuse SET ${sets.join(', ')} WHERE id_interaction = ?`, vals);
-    res.json({ message: 'Interaction mise à jour' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 exports.remove = async (req, res) => {
   try {
-    await pool.query('DELETE FROM interaction_medicamenteuse WHERE id_interaction = ?', [req.params.id]);
-    res.json({ message: 'Interaction supprimée' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await prisma.interactionMedicamenteuse.delete({ where: { id_interaction: +req.params.id } });
+    res.json({ message: 'Supprimée' });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };

@@ -1,15 +1,12 @@
 const router = require('express').Router();
-const ctrl   = require('../controllers/medecin.controller');
-const auth   = require('../middleware/auth');
-const role   = require('../middleware/roleCheck');
+const ctrl = require('../controllers/medecin.controller');
+const auth = require('../middleware/auth');
 
-router.get('/',        auth, ctrl.getAll);
-router.get('/:id',     auth, ctrl.getOne);
-router.put('/:id',     auth, ctrl.update);
-
-router.get('/:id/disponibilites', auth, ctrl.getDisponibilites);
-router.put('/:id/disponibilites', auth, role('medecin', 'admin'), ctrl.updateDisponibilites);
-
-router.get('/:id/creneaux', auth, ctrl.getCreneaux);
+router.get('/', ctrl.getAll);
+router.get('/:id', ctrl.getById);
+router.put('/:id', auth, ctrl.update);
+router.get('/:id/disponibilites', ctrl.getDisponibilites);
+router.put('/:id/disponibilites', auth, ctrl.setDisponibilites);
+router.get('/:id/creneaux', ctrl.getCreneaux);
 
 module.exports = router;

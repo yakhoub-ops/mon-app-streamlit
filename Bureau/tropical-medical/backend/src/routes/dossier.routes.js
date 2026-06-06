@@ -1,13 +1,8 @@
 const router = require('express').Router();
-const ctrl   = require('../controllers/dossier.controller');
-const auth   = require('../middleware/auth');
-const role   = require('../middleware/roleCheck');
+const ctrl = require('../controllers/dossier.controller');
+const auth = require('../middleware/auth');
 
-const canRead  = role('medecin', 'receptionniste', 'admin', 'patient');
-const canWrite = role('medecin', 'admin');
-
-// /api/dossiers/patient/:id_patient
-router.get('/patient/:id_patient',  auth, canRead,  ctrl.getByPatient);
-router.put('/patient/:id_patient',  auth, canWrite, ctrl.updateByPatient);
+router.get('/patient/:patientId', auth, ctrl.getByPatient);
+router.put('/patient/:patientId', auth, ctrl.update);
 
 module.exports = router;

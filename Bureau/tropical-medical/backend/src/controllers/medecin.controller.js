@@ -1,166 +1,123 @@
-const pool = require('../config/db');
+const prisma = require('../config/prisma');
 
 exports.getAll = async (req, res) => {
   try {
-    const { service, specialite } = req.query;
-    let sql = `
-      SELECT m.id_medecin, m.specialite, m.service, m.disponible, m.teleconsult_active,
-             u.nom, u.prenom, u.telephone, u.email
-      FROM medecin m
-      JOIN utilisateur u ON u.id_util = m.id_util
-      WHERE u.actif = 1
-    `;
-    const params = [];
-    if (service)    { sql += ' AND m.service = ?';    params.push(service); }
-    if (specialite) { sql += ' AND m.specialite = ?'; params.push(specialite); }
-    sql += ' ORDER BY u.nom, u.prenom';
-    const [rows] = await pool.query(sql, params);
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const medecins = await prisma.medecin.findMany({
+      include: {
+        utilisateur: { omit: { mot_de_passe: true } },
+        disponibilites: true,
+      },
+      orderBy: { utilisateur: { nom: 'asc' } },
+    });
+    res.json(medecins);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+exports.getById = async (req, res) => {
+  try {
+    const m = await prisma.medecin.findUnique({
+      where: { id_medecin: +req.params.id },
+      include: {
+        utilisateur: { omit: { mot_de_passe: true } },
+        disponibilites: true,
+      },
+    });
+    if (!m) return res.status(404).json({ message: 'Médecin introuvable' });
+    res.json(m);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 };
 
 exports.update = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { specialite, service, disponible, teleconsult_active, biographie, numero_ordre } = req.body;
-
-    if (req.user.role === 'medecin') {
-      const [[m]] = await pool.query('SELECT id_medecin FROM medecin WHERE id_util = ?', [req.user.id]);
-      if (!m || m.id_medecin !== Number(id))
-        return res.status(403).json({ error: 'Accès refusé' });
-    }
-
-    const sets = [];
-    const vals = [];
-    if (specialite         !== undefined) { sets.push('specialite = ?');         vals.push(specialite); }
-    if (service            !== undefined) { sets.push('service = ?');            vals.push(service); }
-    if (disponible         !== undefined) { sets.push('disponible = ?');         vals.push(disponible); }
-    if (teleconsult_active !== undefined) { sets.push('teleconsult_active = ?'); vals.push(teleconsult_active ? 1 : 0); }
-    if (biographie         !== undefined) { sets.push('biographie = ?');         vals.push(biographie); }
-    if (numero_ordre       !== undefined) { sets.push('numero_ordre = ?');       vals.push(numero_ordre); }
-
-    if (!sets.length) return res.status(400).json({ error: 'Rien à modifier' });
-    vals.push(id);
-    await pool.query(`UPDATE medecin SET ${sets.join(', ')} WHERE id_medecin = ?`, vals);
-    res.json({ message: 'Profil médecin mis à jour' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-};
-
-exports.getOne = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [[medecin]] = await pool.query(`
-      SELECT m.*, u.nom, u.prenom, u.telephone, u.email
-      FROM medecin m JOIN utilisateur u ON u.id_util = m.id_util
-      WHERE m.id_medecin = ? AND u.actif = 1
-    `, [id]);
-    if (!medecin) return res.status(404).json({ error: 'Médecin introuvable' });
-
-    const [dispos] = await pool.query(
-      'SELECT * FROM disponibilite WHERE id_medecin = ? ORDER BY jour_semaine, heure_debut',
-      [id]
-    );
-    res.json({ ...medecin, disponibilites: dispos });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const { specialite, service, biographie, disponible, teleconsult_active } = req.body;
+    const m = await prisma.medecin.update({
+      where: { id_medecin: +req.params.id },
+      data: { specialite, service, biographie, disponible, teleconsult_active },
+    });
+    res.json(m);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 };
 
 exports.getDisponibilites = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT * FROM disponibilite WHERE id_medecin = ? ORDER BY jour_semaine, heure_debut',
-      [req.params.id]
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const dispos = await prisma.disponibilite.findMany({
+      where: { id_medecin: +req.params.id },
+      orderBy: [{ jour_semaine: 'asc' }, { heure_debut: 'asc' }],
+    });
+    res.json(dispos);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 };
 
-exports.updateDisponibilites = async (req, res) => {
-  const conn = await pool.getConnection();
+exports.setDisponibilites = async (req, res) => {
   try {
-    await conn.beginTransaction();
-    const { id } = req.params;
+    const id_medecin = +req.params.id;
     const { disponibilites } = req.body;
-
-    if (req.user.role === 'medecin') {
-      const [[m]] = await conn.query('SELECT id_medecin FROM medecin WHERE id_util = ?', [req.user.id]);
-      if (!m || m.id_medecin !== Number(id))
-        return res.status(403).json({ error: 'Accès refusé' });
-    }
-
-    await conn.query('DELETE FROM disponibilite WHERE id_medecin = ?', [id]);
-    if (disponibilites?.length > 0) {
-      const vals = disponibilites.map(d => [
-        id, d.jour_semaine, d.heure_debut, d.heure_fin, d.duree_slot || 30,
-      ]);
-      await conn.query(
-        'INSERT INTO disponibilite (id_medecin, jour_semaine, heure_debut, heure_fin, duree_slot) VALUES ?',
-        [vals]
-      );
-    }
-    await conn.commit();
-    res.json({ message: 'Disponibilités mises à jour' });
-  } catch (err) {
-    await conn.rollback();
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
+    await prisma.disponibilite.deleteMany({ where: { id_medecin } });
+    const created = await prisma.disponibilite.createMany({
+      data: disponibilites.map((d) => ({
+        id_medecin,
+        jour_semaine: d.jour_semaine,
+        heure_debut: new Date(`1970-01-01T${d.heure_debut}`),
+        heure_fin: new Date(`1970-01-01T${d.heure_fin}`),
+        duree_slot: d.duree_slot || 30,
+      })),
+    });
+    res.json({ count: created.count });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 };
 
 exports.getCreneaux = async (req, res) => {
   try {
-    const { id } = req.params;
     const { date } = req.query;
-    if (!date) return res.status(400).json({ error: 'Paramètre date requis' });
+    const id_medecin = +req.params.id;
+    if (!date) return res.status(400).json({ message: 'Date requise' });
 
-    const jsDay  = new Date(date + 'T12:00:00').getDay(); // 0=Dim … 6=Sam
-    const sqlDay = jsDay === 0 ? 7 : jsDay;               // 1=Lun … 7=Dim
+    const d = new Date(date);
+    const jour = d.getDay() || 7; // 1=Lun..7=Dim
+    const dispos = await prisma.disponibilite.findMany({
+      where: { id_medecin, jour_semaine: jour },
+    });
 
-    const [dispos] = await pool.query(
-      'SELECT heure_debut, heure_fin, duree_slot FROM disponibilite WHERE id_medecin = ? AND jour_semaine = ?',
-      [id, sqlDay]
-    );
-    if (!dispos.length) return res.json([]);
+    const rdvs = await prisma.rdv.findMany({
+      where: {
+        id_medecin,
+        date_rdv: {
+          gte: new Date(`${date}T00:00:00`),
+          lt: new Date(`${date}T23:59:59`),
+        },
+        statut: { in: ['en_attente', 'confirme'] },
+      },
+      select: { date_rdv: true },
+    });
+    const occupes = rdvs.map((r) => r.date_rdv.toISOString().slice(11, 16));
 
-    const now = new Date();
-    const isToday = date === now.toISOString().slice(0, 10);
-    const nowMin  = isToday ? now.getHours() * 60 + now.getMinutes() : 0;
-
-    const [booked] = await pool.query(`
-      SELECT TIME_FORMAT(TIME(date_rdv), '%H:%i') AS heure
-      FROM rdv
-      WHERE id_medecin = ? AND DATE(date_rdv) = ? AND statut NOT IN ('annule')
-    `, [id, date]);
-    const bookedSet = new Set(booked.map(b => b.heure));
-
-    const slots = [];
-    for (const d of dispos) {
-      const duree = d.duree_slot || 30;
-      let cur = timeToMin(d.heure_debut);
-      const end = timeToMin(d.heure_fin);
-      while (cur + duree <= end) {
-        const slot = minToTime(cur);
-        // Ne proposer que les créneaux futurs
-        if (cur > nowMin && !bookedSet.has(slot)) slots.push(slot);
-        cur += duree;
+    const creneaux = [];
+    for (const dispo of dispos) {
+      const debut = new Date(dispo.heure_debut);
+      const fin = new Date(dispo.heure_fin);
+      const slot = dispo.duree_slot;
+      let cur = debut;
+      while (cur < fin) {
+        const h = cur.toISOString().slice(11, 16);
+        const dt = new Date(`${date}T${h}:00`);
+        if (dt > new Date()) {
+          creneaux.push({ heure: h, disponible: !occupes.includes(h) });
+        }
+        cur = new Date(cur.getTime() + slot * 60000);
       }
     }
-    res.json(slots);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json(creneaux);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 };
-
-function timeToMin(t) {
-  const [h, m] = t.split(':').map(Number);
-  return h * 60 + m;
-}
-function minToTime(m) {
-  return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
-}

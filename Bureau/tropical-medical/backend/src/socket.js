@@ -1,35 +1,25 @@
-const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
+const { setIo } = require('./utils/notify');
 
-let _io = null;
+module.exports = (io) => {
+  setIo(io);
 
-function init(httpServer) {
-  _io = new Server(httpServer, {
-    cors: { origin: '*', methods: ['GET', 'POST'] },
-  });
-
-  _io.use((socket, next) => {
+  io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
-    if (!token) return next(new Error('Unauthorized'));
+    if (!token) return next(new Error('Non authentifié'));
     try {
       socket.user = jwt.verify(token, process.env.JWT_SECRET);
       next();
     } catch {
-      next(new Error('Unauthorized'));
+      next(new Error('Token invalide'));
     }
   });
 
-  _io.on('connection', (socket) => {
-    socket.join(`user:${socket.user.id}`);
-    socket.join(`role:${socket.user.role}`);
+  io.on('connection', (socket) => {
+    const { id, role } = socket.user;
+    socket.join(`user:${id}`);
+    socket.join(`role:${role}`);
+
     socket.on('disconnect', () => {});
   });
-
-  return _io;
-}
-
-function getIO() {
-  return _io;
-}
-
-module.exports = { init, getIO };
+};

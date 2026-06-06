@@ -1,16 +1,12 @@
 const router = require('express').Router();
-const ctrl   = require('../controllers/ordonnance.controller');
-const auth   = require('../middleware/auth');
-const role   = require('../middleware/roleCheck');
+const ctrl = require('../controllers/ordonnance.controller');
+const auth = require('../middleware/auth');
 
-// Liste des médicaments (pour formulaire ordonnance)
-// Placé AVANT /:id pour ne pas être capturé
 router.get('/medicaments', auth, ctrl.getMedicaments);
-
-router.get('/',      auth, ctrl.getAll);
-router.get('/:id',   auth, ctrl.getOne);
-router.post('/',     auth, role('medecin'), ctrl.create);
-router.put('/:id',   auth, role('medecin', 'pharmacien', 'admin'), ctrl.update);
-router.delete('/:id',auth, role('medecin', 'admin'), ctrl.remove);
+router.post('/medicaments', auth, ctrl.createMedicament);
+router.get('/', auth, ctrl.getAll);
+router.get('/:id', auth, ctrl.getById);
+router.post('/', auth, ctrl.create);
+router.patch('/:id/statut', auth, ctrl.updateStatut);
 
 module.exports = router;

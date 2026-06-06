@@ -1,51 +1,58 @@
-const pool = require('../config/db');
+const prisma = require('../config/prisma');
 
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT * FROM notification WHERE id_util = ? ORDER BY created_at DESC LIMIT 60',
-      [req.user.id]
-    );
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const notifs = await prisma.notification.findMany({
+      where: { id_util: req.user.id },
+      orderBy: { created_at: 'desc' },
+      take: 50,
+    });
+    res.json(notifs);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
 exports.getUnreadCount = async (req, res) => {
   try {
-    const [[{ count }]] = await pool.query(
-      'SELECT COUNT(*) AS count FROM notification WHERE id_util = ? AND lu = 0',
-      [req.user.id]
-    );
-    res.json({ count: Number(count) });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    const count = await prisma.notification.count({
+      where: { id_util: req.user.id, lu: false },
+    });
+    res.json({ count });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
 exports.markRead = async (req, res) => {
   try {
-    await pool.query(
-      'UPDATE notification SET lu = 1 WHERE id_notification = ? AND id_util = ?',
-      [req.params.id, req.user.id]
-    );
-    res.json({ message: 'Marquée comme lue' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await prisma.notification.update({
+      where: { id_notification: +req.params.id },
+      data: { lu: true },
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
 exports.markAllRead = async (req, res) => {
   try {
-    await pool.query(
-      'UPDATE notification SET lu = 1 WHERE id_util = ? AND lu = 0',
-      [req.user.id]
-    );
-    res.json({ message: 'Toutes marquées comme lues' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await prisma.notification.updateMany({
+      where: { id_util: req.user.id, lu: false },
+      data: { lu: true },
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
 exports.remove = async (req, res) => {
   try {
-    await pool.query(
-      'DELETE FROM notification WHERE id_notification = ? AND id_util = ?',
-      [req.params.id, req.user.id]
-    );
-    res.json({ message: 'Supprimée' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+    await prisma.notification.delete({ where: { id_notification: +req.params.id } });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };

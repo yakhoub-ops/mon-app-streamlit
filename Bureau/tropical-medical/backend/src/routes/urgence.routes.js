@@ -1,12 +1,9 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/urgence.controller');
 const auth = require('../middleware/auth');
-const role = require('../middleware/roleCheck');
 
-router.get('/',      auth, role('receptionniste', 'medecin', 'admin'), ctrl.getAll);
-router.get('/:id',   auth, role('receptionniste', 'medecin', 'admin'), ctrl.getOne);
-router.post('/',     auth, role('receptionniste', 'admin'), ctrl.create);
-router.put('/:id',   auth, role('receptionniste', 'medecin', 'admin'), ctrl.update);
-router.delete('/:id',auth, role('receptionniste', 'admin'), ctrl.remove);
+router.get('/', auth, ctrl.getAll);
+router.post('/', auth, ctrl.create);
+router.patch('/:id/statut', auth, ctrl.updateStatut);
 
 module.exports = router;

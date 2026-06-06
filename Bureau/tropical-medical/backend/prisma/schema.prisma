@@ -1,0 +1,549 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Utilisateur {
+  id_util      Int      @id @default(autoincrement()) @db.UnsignedInt
+  nom          String   @db.VarChar(80)
+  prenom       String   @db.VarChar(80)
+  telephone    String   @db.VarChar(20)
+  email        String   @unique @db.VarChar(120)
+  mot_de_passe String   @db.VarChar(255)
+  role         Role
+  actif        Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  medecin          Medecin?
+  patient          Patient?
+  notifications    Notification[]
+  mouvements_stock MouvementStock[]
+
+  @@map("utilisateur")
+}
+
+enum Role {
+  medecin
+  patient
+  receptionniste
+  pharmacien
+  admin
+}
+
+model Patient {
+  id_patient      Int     @id @default(autoincrement()) @db.UnsignedInt
+  id_util         Int     @unique @db.UnsignedInt
+  numero_dossier  String? @unique @db.VarChar(20)
+  date_naissance  DateTime? @db.Date
+  sexe            Sexe?
+  adresse         String? @db.VarChar(255)
+  groupe_sanguin  GroupeSanguin?
+  allergies       String? @db.Text
+  antecedents     String? @db.Text
+
+  utilisateur     Utilisateur      @relation(fields: [id_util], references: [id_util], onDelete: Cascade)
+  dossier         DossierMedical?
+  rdvs            Rdv[]
+  consultations   Consultation[]
+  ordonnances     Ordonnance[]
+  file_attente    FileAttente[]
+  urgences        Urgence[]
+  factures        Facture[]
+  teleconsultations Teleconsultation[]
+  liste_attente   ListeAttenteRdv[]
+
+  @@map("patient")
+}
+
+enum Sexe {
+  M
+  F
+  Autre
+}
+
+enum GroupeSanguin {
+  A_plus  @map("A+")
+  A_minus @map("A-")
+  B_plus  @map("B+")
+  B_minus @map("B-")
+  AB_plus @map("AB+")
+  AB_minus @map("AB-")
+  O_plus  @map("O+")
+  O_minus @map("O-")
+}
+
+model Medecin {
+  id_medecin          Int     @id @default(autoincrement()) @db.UnsignedInt
+  id_util             Int     @unique @db.UnsignedInt
+  specialite          String  @db.VarChar(100)
+  service             String? @db.VarChar(100)
+  numero_ordre        String? @db.VarChar(50)
+  biographie          String? @db.Text
+  photo_url           String? @db.VarChar(255)
+  disponible          Boolean @default(true)
+  teleconsult_active  Boolean @default(false)
+
+  utilisateur     Utilisateur       @relation(fields: [id_util], references: [id_util], onDelete: Cascade)
+  disponibilites  Disponibilite[]
+  rdvs            Rdv[]
+  consultations   Consultation[]
+  ordonnances     Ordonnance[]
+  file_attente    FileAttente[]
+  urgences        Urgence[]
+  teleconsultations Teleconsultation[]
+  liste_attente   ListeAttenteRdv[]
+
+  @@map("medecin")
+}
+
+model Disponibilite {
+  id_dispo    Int    @id @default(autoincrement()) @db.UnsignedInt
+  id_medecin  Int    @db.UnsignedInt
+  jour_semaine Int   @db.UnsignedTinyInt
+  heure_debut DateTime @db.Time
+  heure_fin   DateTime @db.Time
+  duree_slot  Int    @default(30) @db.UnsignedTinyInt
+
+  medecin     Medecin @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
+
+  @@map("disponibilite")
+}
+
+model Rdv {
+  id_rdv      Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_patient  Int      @db.UnsignedInt
+  id_medecin  Int      @db.UnsignedInt
+  date_rdv    DateTime
+  motif       String?  @db.VarChar(255)
+  type_rdv    TypeRdv  @default(presentiel)
+  statut      StatutRdv @default(en_attente)
+  notes       String?  @db.Text
+  created_at  DateTime @default(now())
+
+  patient         Patient          @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+  medecin         Medecin          @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
+  consultations   Consultation[]
+  file_attente    FileAttente[]
+  teleconsultations Teleconsultation[]
+
+  @@index([id_patient])
+  @@index([id_medecin])
+  @@index([date_rdv])
+  @@index([statut])
+  @@map("rdv")
+}
+
+enum TypeRdv {
+  presentiel
+  teleconsultation
+}
+
+enum StatutRdv {
+  en_attente
+  confirme
+  annule
+  termine
+}
+
+model Consultation {
+  id_consultation  Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_rdv           Int?     @db.UnsignedInt
+  id_patient       Int      @db.UnsignedInt
+  id_medecin       Int      @db.UnsignedInt
+  id_dossier       Int?     @db.UnsignedInt
+  date_consultation DateTime @default(now())
+  motif            String?  @db.VarChar(255)
+  diagnostic       String?  @db.Text
+  traitement       String?  @db.Text
+  notes            String?  @db.Text
+  statut           StatutConsultation @default(en_cours)
+
+  rdv       Rdv?           @relation(fields: [id_rdv], references: [id_rdv], onDelete: SetNull)
+  patient   Patient        @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+  medecin   Medecin        @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
+  dossier   DossierMedical? @relation(fields: [id_dossier], references: [id_dossier], onDelete: SetNull)
+  ordonnances Ordonnance[]
+  factures    Facture[]
+
+  @@index([id_patient])
+  @@index([id_medecin])
+  @@index([date_consultation])
+  @@map("consultation")
+}
+
+enum StatutConsultation {
+  en_cours
+  terminee
+}
+
+model DossierMedical {
+  id_dossier  Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_patient  Int      @unique @db.UnsignedInt
+  observations String? @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  patient      Patient        @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+  consultations Consultation[]
+
+  @@map("dossier_medical")
+}
+
+model Ordonnance {
+  id_ordonnance   Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_consultation Int      @db.UnsignedInt
+  id_medecin      Int      @db.UnsignedInt
+  id_patient      Int      @db.UnsignedInt
+  date_emission   DateTime @default(now())
+  date_expiration DateTime? @db.Date
+  statut          StatutOrdonnance @default(active)
+
+  consultation  Consultation    @relation(fields: [id_consultation], references: [id_consultation], onDelete: Cascade)
+  medecin       Medecin         @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
+  patient       Patient         @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+  lignes        LigneOrdonnance[]
+
+  @@index([id_patient])
+  @@index([statut])
+  @@map("ordonnance")
+}
+
+enum StatutOrdonnance {
+  active
+  delivree
+  expiree
+  annulee
+}
+
+model Medicament {
+  id_medicament Int    @id @default(autoincrement()) @db.UnsignedInt
+  nom           String @db.VarChar(150)
+  dci           String? @db.VarChar(150)
+  forme         FormeMedicament @default(comprime)
+  dosage        String? @db.VarChar(80)
+  description   String? @db.Text
+
+  lignes_ordonnance     LigneOrdonnance[]
+  stocks                Stock[]
+  interactions_a        InteractionMedicamenteuse[] @relation("MedicamentA")
+  interactions_b        InteractionMedicamenteuse[] @relation("MedicamentB")
+
+  @@map("medicament")
+}
+
+enum FormeMedicament {
+  comprime
+  sirop
+  injectable
+  creme
+  gouttes
+  poudre
+  autre
+}
+
+model LigneOrdonnance {
+  id_ligne      Int    @id @default(autoincrement()) @db.UnsignedInt
+  id_ordonnance Int    @db.UnsignedInt
+  id_medicament Int    @db.UnsignedInt
+  posologie     String @db.VarChar(255)
+  duree         String? @db.VarChar(80)
+  quantite      Int    @default(1) @db.UnsignedSmallInt
+  instructions  String? @db.Text
+
+  ordonnance    Ordonnance  @relation(fields: [id_ordonnance], references: [id_ordonnance], onDelete: Cascade)
+  medicament    Medicament  @relation(fields: [id_medicament], references: [id_medicament], onDelete: Cascade)
+
+  @@map("ligne_ordonnance")
+}
+
+model FileAttente {
+  id_file       Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_patient    Int      @db.UnsignedInt
+  id_medecin    Int?     @db.UnsignedInt
+  id_rdv        Int?     @db.UnsignedInt
+  heure_arrivee DateTime @default(now())
+  heure_appel   DateTime?
+  statut        StatutFileAttente @default(en_attente)
+  priorite      Int      @default(3) @db.UnsignedTinyInt
+  notes         String?  @db.VarChar(255)
+
+  patient   Patient  @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+  medecin   Medecin? @relation(fields: [id_medecin], references: [id_medecin], onDelete: SetNull)
+  rdv       Rdv?     @relation(fields: [id_rdv], references: [id_rdv], onDelete: SetNull)
+
+  @@index([statut])
+  @@index([priorite])
+  @@map("file_attente")
+}
+
+enum StatutFileAttente {
+  en_attente
+  appele
+  consulte
+  parti
+}
+
+model Urgence {
+  id_urgence          Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_patient          Int?     @db.UnsignedInt
+  nom_patient         String?  @db.VarChar(160)
+  description         String   @db.Text
+  niveau              NiveauUrgence @default(urgent)
+  statut              StatutUrgence @default(en_attente)
+  date_arrivee        DateTime @default(now())
+  id_medecin          Int?     @db.UnsignedInt
+  date_prise_en_charge DateTime?
+  notes               String?  @db.Text
+
+  patient   Patient? @relation(fields: [id_patient], references: [id_patient], onDelete: SetNull)
+  medecin   Medecin? @relation(fields: [id_medecin], references: [id_medecin], onDelete: SetNull)
+
+  @@map("urgence")
+}
+
+enum NiveauUrgence {
+  critique
+  urgent
+  modere
+  faible
+}
+
+enum StatutUrgence {
+  en_attente
+  prise_en_charge
+  resolue
+}
+
+model Stock {
+  id_stock        Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_medicament   Int      @db.UnsignedInt
+  quantite        Int      @default(0) @db.UnsignedInt
+  seuil_alerte    Int      @default(10) @db.UnsignedInt
+  prix_unitaire   Decimal  @default(0) @db.Decimal(10, 2)
+  lot             String?  @db.VarChar(80)
+  date_peremption DateTime? @db.Date
+  date_entree     DateTime @default(now())
+
+  medicament    Medicament       @relation(fields: [id_medicament], references: [id_medicament], onDelete: Cascade)
+  mouvements    MouvementStock[]
+  actualites    Actualite[]
+
+  @@index([date_peremption])
+  @@map("stock")
+}
+
+model MouvementStock {
+  id_mouvement Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_stock     Int      @db.UnsignedInt
+  type         TypeMouvement
+  quantite     Int
+  motif        String?  @db.VarChar(255)
+  id_util      Int?     @db.UnsignedInt
+  created_at   DateTime @default(now())
+
+  stock        Stock        @relation(fields: [id_stock], references: [id_stock], onDelete: Cascade)
+  utilisateur  Utilisateur? @relation(fields: [id_util], references: [id_util], onDelete: SetNull)
+
+  @@map("mouvement_stock")
+}
+
+enum TypeMouvement {
+  entree
+  sortie
+  ajustement
+}
+
+model Assurance {
+  id_assurance         Int      @id @default(autoincrement()) @db.UnsignedInt
+  nom                  String   @db.VarChar(150)
+  code                 String?  @unique @db.VarChar(50)
+  taux_prise_en_charge Decimal  @default(0) @db.Decimal(5, 2)
+  description          String?  @db.Text
+  actif                Boolean  @default(true)
+  created_at           DateTime @default(now())
+
+  factures Facture[]
+
+  @@map("assurance")
+}
+
+model Facture {
+  id_facture          Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_patient          Int      @db.UnsignedInt
+  id_consultation     Int?     @db.UnsignedInt
+  date_emission       DateTime @default(now())
+  date_echeance       DateTime? @db.Date
+  montant_total       Decimal  @default(0) @db.Decimal(12, 2)
+  montant_paye        Decimal  @default(0) @db.Decimal(12, 2)
+  statut              StatutFacture @default(en_attente)
+  mode_paiement       ModePaiement?
+  reference_assurance String?  @db.VarChar(120)
+  id_assurance        Int?     @db.UnsignedInt
+  taux_assurance      Decimal? @db.Decimal(5, 2)
+  part_assurance      Decimal  @default(0) @db.Decimal(12, 2)
+  part_patient        Decimal  @default(0) @db.Decimal(12, 2)
+  notes               String?  @db.Text
+
+  patient       Patient       @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+  consultation  Consultation? @relation(fields: [id_consultation], references: [id_consultation], onDelete: SetNull)
+  assurance     Assurance?    @relation(fields: [id_assurance], references: [id_assurance], onDelete: SetNull)
+  lignes        LigneFacture[]
+
+  @@index([id_patient])
+  @@index([statut])
+  @@map("facture")
+}
+
+enum StatutFacture {
+  en_attente
+  partiellement_paye
+  paye
+  annule
+}
+
+enum ModePaiement {
+  especes
+  wave
+  orange_money
+  carte
+  assurance
+  cheque
+}
+
+model LigneFacture {
+  id_ligne_facture Int     @id @default(autoincrement()) @db.UnsignedInt
+  id_facture       Int     @db.UnsignedInt
+  description      String  @db.VarChar(255)
+  quantite         Int     @default(1) @db.UnsignedSmallInt
+  prix_unitaire    Decimal @db.Decimal(10, 2)
+  montant          Decimal @db.Decimal(12, 2)
+
+  facture   Facture @relation(fields: [id_facture], references: [id_facture], onDelete: Cascade)
+
+  @@map("ligne_facture")
+}
+
+model Notification {
+  id_notification Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_util         Int      @db.UnsignedInt
+  message         String   @db.Text
+  type            TypeNotification @default(systeme)
+  lu              Boolean  @default(false)
+  lien            String?  @db.VarChar(255)
+  created_at      DateTime @default(now())
+
+  utilisateur Utilisateur @relation(fields: [id_util], references: [id_util], onDelete: Cascade)
+
+  @@index([id_util, lu])
+  @@map("notification")
+}
+
+enum TypeNotification {
+  rdv
+  urgence
+  ordonnance
+  stock
+  facture
+  systeme
+}
+
+model Actualite {
+  id_actualite Int      @id @default(autoincrement()) @db.UnsignedInt
+  titre        String   @db.VarChar(200)
+  contenu      String?  @db.Text
+  type         TypeActualite @default(annonce)
+  id_stock     Int?     @db.UnsignedInt
+  publie       Boolean  @default(true)
+  created_at   DateTime @default(now())
+
+  stock Stock? @relation(fields: [id_stock], references: [id_stock], onDelete: SetNull)
+
+  @@index([type])
+  @@index([created_at])
+  @@map("actualite")
+}
+
+enum TypeActualite {
+  stock_entree
+  stock_alerte
+  stock_peremption
+  conseil
+  annonce
+}
+
+model Teleconsultation {
+  id_teleconsult  Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_rdv          Int      @db.UnsignedInt
+  id_medecin      Int      @db.UnsignedInt
+  id_patient      Int      @db.UnsignedInt
+  statut          StatutTeleconsult @default(planifiee)
+  lien_session    String?  @db.VarChar(500)
+  date_debut      DateTime?
+  date_fin        DateTime?
+  notes           String?  @db.Text
+  created_at      DateTime @default(now())
+
+  rdv     Rdv     @relation(fields: [id_rdv], references: [id_rdv], onDelete: Cascade)
+  medecin Medecin @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
+  patient Patient @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+
+  @@map("teleconsultation")
+}
+
+enum StatutTeleconsult {
+  planifiee
+  en_cours
+  terminee
+  annulee
+}
+
+model InteractionMedicamenteuse {
+  id_interaction   Int    @id @default(autoincrement()) @db.UnsignedInt
+  id_medicament_a  Int    @db.UnsignedInt
+  id_medicament_b  Int    @db.UnsignedInt
+  niveau           NiveauInteraction @default(modere)
+  description      String? @db.Text
+
+  medicament_a Medicament @relation("MedicamentA", fields: [id_medicament_a], references: [id_medicament], onDelete: Cascade)
+  medicament_b Medicament @relation("MedicamentB", fields: [id_medicament_b], references: [id_medicament], onDelete: Cascade)
+
+  @@unique([id_medicament_a, id_medicament_b])
+  @@map("interaction_medicamenteuse")
+}
+
+enum NiveauInteraction {
+  faible
+  modere
+  eleve
+  contrindication
+}
+
+model ListeAttenteRdv {
+  id_liste      Int      @id @default(autoincrement()) @db.UnsignedInt
+  id_patient    Int      @db.UnsignedInt
+  id_medecin    Int      @db.UnsignedInt
+  date_souhaitee DateTime? @db.Date
+  motif         String?  @db.VarChar(255)
+  priorite      Int      @default(3) @db.UnsignedTinyInt
+  statut        StatutListeAttente @default(en_attente)
+  created_at    DateTime @default(now())
+
+  patient Patient @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
+  medecin Medecin @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
+
+  @@map("liste_attente_rdv")
+}
+
+enum StatutListeAttente {
+  en_attente
+  propose
+  confirme
+  expire
+}
