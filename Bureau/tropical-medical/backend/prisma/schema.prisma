@@ -2,548 +2,415 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
-
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
+// ─── UTILISATEUR & PROFILS ────────────────────────────────────────────────────
+
 model Utilisateur {
-  id_util      Int      @id @default(autoincrement()) @db.UnsignedInt
-  nom          String   @db.VarChar(80)
-  prenom       String   @db.VarChar(80)
-  telephone    String   @db.VarChar(20)
-  email        String   @unique @db.VarChar(120)
-  mot_de_passe String   @db.VarChar(255)
-  role         Role
+  id           Int      @id @default(autoincrement())
+  nom          String
+  prenom       String
+  email        String   @unique
+  telephone    String?
+  mot_de_passe String
+  role         String   // ROLES.* : PATIENT | MEDECIN | RECEPTIONNISTE | PHARMACIEN | ADMIN
   actif        Boolean  @default(true)
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  avatar       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  medecin          Medecin?
-  patient          Patient?
-  notifications    Notification[]
-  mouvements_stock MouvementStock[]
-
-  @@map("utilisateur")
+  medecin              Medecin?
+  patient              Patient?
+  preferences          PreferencesUtilisateur?
+  notifications        Notification[]
+  messagesEnvoyes      Interaction[] @relation("MessagesEnvoyes")
+  messagesRecus        Interaction[] @relation("MessagesRecus")
+  actualites           Actualite[]
 }
 
-enum Role {
-  medecin
-  patient
-  receptionniste
-  pharmacien
-  admin
-}
+model PreferencesUtilisateur {
+  id            Int    @id @default(autoincrement())
+  utilisateurId Int    @unique
+  langue        String @default("FR")    // LANGUE.*
+  theme         String @default("CLAIR") // THEME.*
 
-model Patient {
-  id_patient      Int     @id @default(autoincrement()) @db.UnsignedInt
-  id_util         Int     @unique @db.UnsignedInt
-  numero_dossier  String? @unique @db.VarChar(20)
-  date_naissance  DateTime? @db.Date
-  sexe            Sexe?
-  adresse         String? @db.VarChar(255)
-  groupe_sanguin  GroupeSanguin?
-  allergies       String? @db.Text
-  antecedents     String? @db.Text
-
-  utilisateur     Utilisateur      @relation(fields: [id_util], references: [id_util], onDelete: Cascade)
-  dossier         DossierMedical?
-  rdvs            Rdv[]
-  consultations   Consultation[]
-  ordonnances     Ordonnance[]
-  file_attente    FileAttente[]
-  urgences        Urgence[]
-  factures        Facture[]
-  teleconsultations Teleconsultation[]
-  liste_attente   ListeAttenteRdv[]
-
-  @@map("patient")
-}
-
-enum Sexe {
-  M
-  F
-  Autre
-}
-
-enum GroupeSanguin {
-  A_plus  @map("A+")
-  A_minus @map("A-")
-  B_plus  @map("B+")
-  B_minus @map("B-")
-  AB_plus @map("AB+")
-  AB_minus @map("AB-")
-  O_plus  @map("O+")
-  O_minus @map("O-")
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id])
 }
 
 model Medecin {
-  id_medecin          Int     @id @default(autoincrement()) @db.UnsignedInt
-  id_util             Int     @unique @db.UnsignedInt
-  specialite          String  @db.VarChar(100)
-  service             String? @db.VarChar(100)
-  numero_ordre        String? @db.VarChar(50)
-  biographie          String? @db.Text
-  photo_url           String? @db.VarChar(255)
-  disponible          Boolean @default(true)
-  teleconsult_active  Boolean @default(false)
+  id                      Int     @id @default(autoincrement())
+  utilisateurId           Int     @unique
+  specialite              String
+  numeroOrdre             String?
+  description             String?
+  consultationTarif       Int     @default(5000) // FCFA
+  teleconsultationActive  Boolean @default(false)
 
-  utilisateur     Utilisateur       @relation(fields: [id_util], references: [id_util], onDelete: Cascade)
-  disponibilites  Disponibilite[]
-  rdvs            Rdv[]
-  consultations   Consultation[]
-  ordonnances     Ordonnance[]
-  file_attente    FileAttente[]
-  urgences        Urgence[]
-  teleconsultations Teleconsultation[]
-  liste_attente   ListeAttenteRdv[]
-
-  @@map("medecin")
+  utilisateur        Utilisateur         @relation(fields: [utilisateurId], references: [id])
+  rendezvous         RendezVous[]
+  consultations      Consultation[]
+  teleconsultations  Teleconsultation[]
+  passagesFileAttente PassageFileAttente[]
 }
 
-model Disponibilite {
-  id_dispo    Int    @id @default(autoincrement()) @db.UnsignedInt
-  id_medecin  Int    @db.UnsignedInt
-  jour_semaine Int   @db.UnsignedTinyInt
-  heure_debut DateTime @db.Time
-  heure_fin   DateTime @db.Time
-  duree_slot  Int    @default(30) @db.UnsignedTinyInt
+model Patient {
+  id            Int       @id @default(autoincrement())
+  utilisateurId Int       @unique
+  dateNaissance DateTime?
+  sexe          String?   // M | F
+  adresse       String?
+  groupeSanguin String?
+  allergies               String?   // JSON texte
+  antecedents             String?   // JSON texte (maladies passées)
+  maladiesChroniques      String?   // JSON texte
+  antecedentsFamiliaux    String?   // JSON texte
+  chirurgies              String?   // JSON texte
+  hospitalisationsPrecedentes String? // JSON texte
+  contactUrgenceNom       String?
+  contactUrgenceTelephone String?
+  numeroIdentification    String?
+  assuranceId   Int?
 
-  medecin     Medecin @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
-
-  @@map("disponibilite")
-}
-
-model Rdv {
-  id_rdv      Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_patient  Int      @db.UnsignedInt
-  id_medecin  Int      @db.UnsignedInt
-  date_rdv    DateTime
-  motif       String?  @db.VarChar(255)
-  type_rdv    TypeRdv  @default(presentiel)
-  statut      StatutRdv @default(en_attente)
-  notes       String?  @db.Text
-  created_at  DateTime @default(now())
-
-  patient         Patient          @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-  medecin         Medecin          @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
-  consultations   Consultation[]
-  file_attente    FileAttente[]
-  teleconsultations Teleconsultation[]
-
-  @@index([id_patient])
-  @@index([id_medecin])
-  @@index([date_rdv])
-  @@index([statut])
-  @@map("rdv")
-}
-
-enum TypeRdv {
-  presentiel
-  teleconsultation
-}
-
-enum StatutRdv {
-  en_attente
-  confirme
-  annule
-  termine
-}
-
-model Consultation {
-  id_consultation  Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_rdv           Int?     @db.UnsignedInt
-  id_patient       Int      @db.UnsignedInt
-  id_medecin       Int      @db.UnsignedInt
-  id_dossier       Int?     @db.UnsignedInt
-  date_consultation DateTime @default(now())
-  motif            String?  @db.VarChar(255)
-  diagnostic       String?  @db.Text
-  traitement       String?  @db.Text
-  notes            String?  @db.Text
-  statut           StatutConsultation @default(en_cours)
-
-  rdv       Rdv?           @relation(fields: [id_rdv], references: [id_rdv], onDelete: SetNull)
-  patient   Patient        @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-  medecin   Medecin        @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
-  dossier   DossierMedical? @relation(fields: [id_dossier], references: [id_dossier], onDelete: SetNull)
-  ordonnances Ordonnance[]
-  factures    Facture[]
-
-  @@index([id_patient])
-  @@index([id_medecin])
-  @@index([date_consultation])
-  @@map("consultation")
-}
-
-enum StatutConsultation {
-  en_cours
-  terminee
-}
-
-model DossierMedical {
-  id_dossier  Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_patient  Int      @unique @db.UnsignedInt
-  observations String? @db.Text
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  patient      Patient        @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-  consultations Consultation[]
-
-  @@map("dossier_medical")
-}
-
-model Ordonnance {
-  id_ordonnance   Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_consultation Int      @db.UnsignedInt
-  id_medecin      Int      @db.UnsignedInt
-  id_patient      Int      @db.UnsignedInt
-  date_emission   DateTime @default(now())
-  date_expiration DateTime? @db.Date
-  statut          StatutOrdonnance @default(active)
-
-  consultation  Consultation    @relation(fields: [id_consultation], references: [id_consultation], onDelete: Cascade)
-  medecin       Medecin         @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
-  patient       Patient         @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-  lignes        LigneOrdonnance[]
-
-  @@index([id_patient])
-  @@index([statut])
-  @@map("ordonnance")
-}
-
-enum StatutOrdonnance {
-  active
-  delivree
-  expiree
-  annulee
-}
-
-model Medicament {
-  id_medicament Int    @id @default(autoincrement()) @db.UnsignedInt
-  nom           String @db.VarChar(150)
-  dci           String? @db.VarChar(150)
-  forme         FormeMedicament @default(comprime)
-  dosage        String? @db.VarChar(80)
-  description   String? @db.Text
-
-  lignes_ordonnance     LigneOrdonnance[]
-  stocks                Stock[]
-  interactions_a        InteractionMedicamenteuse[] @relation("MedicamentA")
-  interactions_b        InteractionMedicamenteuse[] @relation("MedicamentB")
-
-  @@map("medicament")
-}
-
-enum FormeMedicament {
-  comprime
-  sirop
-  injectable
-  creme
-  gouttes
-  poudre
-  autre
-}
-
-model LigneOrdonnance {
-  id_ligne      Int    @id @default(autoincrement()) @db.UnsignedInt
-  id_ordonnance Int    @db.UnsignedInt
-  id_medicament Int    @db.UnsignedInt
-  posologie     String @db.VarChar(255)
-  duree         String? @db.VarChar(80)
-  quantite      Int    @default(1) @db.UnsignedSmallInt
-  instructions  String? @db.Text
-
-  ordonnance    Ordonnance  @relation(fields: [id_ordonnance], references: [id_ordonnance], onDelete: Cascade)
-  medicament    Medicament  @relation(fields: [id_medicament], references: [id_medicament], onDelete: Cascade)
-
-  @@map("ligne_ordonnance")
-}
-
-model FileAttente {
-  id_file       Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_patient    Int      @db.UnsignedInt
-  id_medecin    Int?     @db.UnsignedInt
-  id_rdv        Int?     @db.UnsignedInt
-  heure_arrivee DateTime @default(now())
-  heure_appel   DateTime?
-  statut        StatutFileAttente @default(en_attente)
-  priorite      Int      @default(3) @db.UnsignedTinyInt
-  notes         String?  @db.VarChar(255)
-
-  patient   Patient  @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-  medecin   Medecin? @relation(fields: [id_medecin], references: [id_medecin], onDelete: SetNull)
-  rdv       Rdv?     @relation(fields: [id_rdv], references: [id_rdv], onDelete: SetNull)
-
-  @@index([statut])
-  @@index([priorite])
-  @@map("file_attente")
-}
-
-enum StatutFileAttente {
-  en_attente
-  appele
-  consulte
-  parti
-}
-
-model Urgence {
-  id_urgence          Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_patient          Int?     @db.UnsignedInt
-  nom_patient         String?  @db.VarChar(160)
-  description         String   @db.Text
-  niveau              NiveauUrgence @default(urgent)
-  statut              StatutUrgence @default(en_attente)
-  date_arrivee        DateTime @default(now())
-  id_medecin          Int?     @db.UnsignedInt
-  date_prise_en_charge DateTime?
-  notes               String?  @db.Text
-
-  patient   Patient? @relation(fields: [id_patient], references: [id_patient], onDelete: SetNull)
-  medecin   Medecin? @relation(fields: [id_medecin], references: [id_medecin], onDelete: SetNull)
-
-  @@map("urgence")
-}
-
-enum NiveauUrgence {
-  critique
-  urgent
-  modere
-  faible
-}
-
-enum StatutUrgence {
-  en_attente
-  prise_en_charge
-  resolue
-}
-
-model Stock {
-  id_stock        Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_medicament   Int      @db.UnsignedInt
-  quantite        Int      @default(0) @db.UnsignedInt
-  seuil_alerte    Int      @default(10) @db.UnsignedInt
-  prix_unitaire   Decimal  @default(0) @db.Decimal(10, 2)
-  lot             String?  @db.VarChar(80)
-  date_peremption DateTime? @db.Date
-  date_entree     DateTime @default(now())
-
-  medicament    Medicament       @relation(fields: [id_medicament], references: [id_medicament], onDelete: Cascade)
-  mouvements    MouvementStock[]
-  actualites    Actualite[]
-
-  @@index([date_peremption])
-  @@map("stock")
-}
-
-model MouvementStock {
-  id_mouvement Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_stock     Int      @db.UnsignedInt
-  type         TypeMouvement
-  quantite     Int
-  motif        String?  @db.VarChar(255)
-  id_util      Int?     @db.UnsignedInt
-  created_at   DateTime @default(now())
-
-  stock        Stock        @relation(fields: [id_stock], references: [id_stock], onDelete: Cascade)
-  utilisateur  Utilisateur? @relation(fields: [id_util], references: [id_util], onDelete: SetNull)
-
-  @@map("mouvement_stock")
-}
-
-enum TypeMouvement {
-  entree
-  sortie
-  ajustement
+  utilisateur          Utilisateur          @relation(fields: [utilisateurId], references: [id])
+  assurance            Assurance?           @relation(fields: [assuranceId], references: [id])
+  rendezvous           RendezVous[]
+  dossier              DossierMedical?
+  hospitalisations     Hospitalisation[]
+  factures             Facture[]
+  passagesFileAttente  PassageFileAttente[]
 }
 
 model Assurance {
-  id_assurance         Int      @id @default(autoincrement()) @db.UnsignedInt
-  nom                  String   @db.VarChar(150)
-  code                 String?  @unique @db.VarChar(50)
-  taux_prise_en_charge Decimal  @default(0) @db.Decimal(5, 2)
-  description          String?  @db.Text
-  actif                Boolean  @default(true)
-  created_at           DateTime @default(now())
+  id             Int    @id @default(autoincrement())
+  type           String // TYPE_ASSURANCE.* : CMU | CNSS | IPM | PRIVEE
+  organisme      String
+  numero         String
+  tauxCouverture Int    @default(80) // pourcentage
 
-  factures Facture[]
-
-  @@map("assurance")
+  patients       Patient[]
 }
+
+// ─── RENDEZ-VOUS & FILE D'ATTENTE ────────────────────────────────────────────
+
+model RendezVous {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  medecinId Int
+  date      DateTime
+  type      String   @default("PRESENTIEL") // TYPE_RDV.*
+  statut    String   @default("EN_ATTENTE") // STATUT_RDV.*
+  motif     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient            Patient              @relation(fields: [patientId], references: [id])
+  medecin            Medecin              @relation(fields: [medecinId], references: [id])
+  teleconsultation   Teleconsultation?
+  passageFileAttente PassageFileAttente?
+}
+
+model PassageFileAttente {
+  id            Int       @id @default(autoincrement())
+  patientId     Int
+  medecinId     Int?
+  rendezvousId  Int?      @unique
+  niveauUrgence String    @default("FAIBLE") // NIVEAU_URGENCE.*
+  statut        String    @default("EN_ATTENTE") // STATUT_PASSAGE.*
+  motif         String?
+  heureArrivee  DateTime  @default(now())
+  heureAppel    DateTime?
+  createdAt     DateTime  @default(now())
+
+  patient      Patient     @relation(fields: [patientId], references: [id])
+  medecin      Medecin?    @relation(fields: [medecinId], references: [id])
+  rendezvous   RendezVous? @relation(fields: [rendezvousId], references: [id])
+  consultation Consultation?
+}
+
+// ─── DOSSIER & CONSULTATION ───────────────────────────────────────────────────
+
+model DossierMedical {
+  id            Int      @id @default(autoincrement())
+  patientId     Int      @unique
+  numeroDossier String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient       Patient         @relation(fields: [patientId], references: [id])
+  consultations Consultation[]
+  ordonnances   Ordonnance[]
+  vaccinations  Vaccination[]
+  examens       ExamenMedical[]
+}
+
+model Vaccination {
+  id                  Int       @id @default(autoincrement())
+  dossierId           Int
+  nom                 String
+  dateAdministration  DateTime
+  rappelPrevu         DateTime?
+  rappelEffectue      Boolean   @default(false)
+  notes               String?
+  createdAt           DateTime  @default(now())
+
+  dossier DossierMedical @relation(fields: [dossierId], references: [id])
+}
+
+model ExamenMedical {
+  id             Int      @id @default(autoincrement())
+  dossierId      Int
+  consultationId Int?
+  type           String   @default("AUTRE") // LABORATOIRE | RADIOLOGIE | ECHOGRAPHIE | SCANNER | IRM | AUTRE
+  titre          String
+  description    String?
+  resultats      String?
+  date           DateTime @default(now())
+  fichier        String?
+  createdAt      DateTime @default(now())
+
+  dossier      DossierMedical @relation(fields: [dossierId], references: [id])
+  consultation Consultation?  @relation(fields: [consultationId], references: [id])
+}
+
+model Consultation {
+  id             Int       @id @default(autoincrement())
+  dossierId      Int
+  medecinId      Int
+  passageId      Int?      @unique
+  date           DateTime  @default(now())
+  motif          String?
+  anamnese       String?
+  examenClinique String?
+  diagnostic     String?
+  traitement     String?
+  notes          String?
+  prochainRdv    DateTime?
+  createdAt      DateTime  @default(now())
+
+  dossier     DossierMedical      @relation(fields: [dossierId], references: [id])
+  medecin     Medecin             @relation(fields: [medecinId], references: [id])
+  passage     PassageFileAttente? @relation(fields: [passageId], references: [id])
+  ordonnances Ordonnance[]
+  examens     ExamenMedical[]
+  facture     Facture?
+}
+
+// ─── ORDONNANCES & MÉDICAMENTS ────────────────────────────────────────────────
+
+model Ordonnance {
+  id             Int       @id @default(autoincrement())
+  dossierId      Int
+  consultationId Int?
+  medecinNom     String
+  date           DateTime  @default(now())
+  statut         String    @default("ACTIVE") // STATUT_ORDONNANCE.*
+  expirationDate DateTime?
+  instructions   String?
+  createdAt      DateTime  @default(now())
+
+  dossier      DossierMedical @relation(fields: [dossierId], references: [id])
+  consultation Consultation?  @relation(fields: [consultationId], references: [id])
+  lignes       LigneOrdonnance[]
+}
+
+model LigneOrdonnance {
+  id           Int    @id @default(autoincrement())
+  ordonnanceId Int
+  medicamentId Int
+  posologie    String
+  duree        String?
+  quantite     Int    @default(1)
+
+  ordonnance  Ordonnance @relation(fields: [ordonnanceId], references: [id])
+  medicament  Medicament @relation(fields: [medicamentId], references: [id])
+}
+
+model Medicament {
+  id            Int     @id @default(autoincrement())
+  nom           String
+  dci           String? // Dénomination Commune Internationale
+  forme         String? // comprimé | sirop | injection | pommade
+  dosage        String?
+  categorie     String?
+  prixUnitaire  Int     @default(0) // FCFA
+  stockActuel   Int     @default(0)
+  stockMinimum  Int     @default(10)
+  description   String?
+  urlFournisseur String?
+  actif         Boolean @default(true)
+
+  lignesOrdonnance LigneOrdonnance[]
+  lots             LotMedicament[]
+}
+
+model LotMedicament {
+  id               Int      @id @default(autoincrement())
+  medicamentId     Int
+  numeroLot        String
+  dateExpiration   DateTime
+  quantite         Int
+  quantiteRestante Int
+  fournisseur      String?
+  prixAchat        Int?     // FCFA
+  createdAt        DateTime @default(now())
+
+  medicament Medicament @relation(fields: [medicamentId], references: [id])
+}
+
+// ─── HOSPITALISATION & LITS ───────────────────────────────────────────────────
+
+model Lit {
+  id     Int    @id @default(autoincrement())
+  numero String @unique
+  chambre String
+  etage  Int    @default(0)
+  type   String @default("STANDARD")    // TYPE_CHAMBRE.*
+  statut String @default("LIBRE")       // STATUT_LIT.*
+  notes  String?
+
+  hospitalisations Hospitalisation[]
+}
+
+model Hospitalisation {
+  id            Int       @id @default(autoincrement())
+  patientId     Int
+  litId         Int
+  medecinId     Int?
+  dateAdmission DateTime  @default(now())
+  dateSortie    DateTime?
+  statut        String    @default("EN_COURS") // STATUT_HOSPITALISATION.*
+  motif         String?
+  diagnostic    String?
+  notes         String?
+  coutParJour   Int       @default(15000) // FCFA
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  lit     Lit     @relation(fields: [litId], references: [id])
+}
+
+// ─── FACTURATION & PAIEMENTS ──────────────────────────────────────────────────
 
 model Facture {
-  id_facture          Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_patient          Int      @db.UnsignedInt
-  id_consultation     Int?     @db.UnsignedInt
-  date_emission       DateTime @default(now())
-  date_echeance       DateTime? @db.Date
-  montant_total       Decimal  @default(0) @db.Decimal(12, 2)
-  montant_paye        Decimal  @default(0) @db.Decimal(12, 2)
-  statut              StatutFacture @default(en_attente)
-  mode_paiement       ModePaiement?
-  reference_assurance String?  @db.VarChar(120)
-  id_assurance        Int?     @db.UnsignedInt
-  taux_assurance      Decimal? @db.Decimal(5, 2)
-  part_assurance      Decimal  @default(0) @db.Decimal(12, 2)
-  part_patient        Decimal  @default(0) @db.Decimal(12, 2)
-  notes               String?  @db.Text
+  id               Int      @id @default(autoincrement())
+  patientId        Int
+  consultationId   Int?     @unique
+  numero           String   @unique
+  date             DateTime @default(now())
+  montantTotal     Int      @default(0) // FCFA
+  montantAssurance Int      @default(0) // FCFA
+  montantPatient   Int      @default(0) // FCFA
+  statut           String   @default("EN_ATTENTE") // STATUT_PAIEMENT.*
+  notes            String?
+  createdAt        DateTime @default(now())
 
-  patient       Patient       @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-  consultation  Consultation? @relation(fields: [id_consultation], references: [id_consultation], onDelete: SetNull)
-  assurance     Assurance?    @relation(fields: [id_assurance], references: [id_assurance], onDelete: SetNull)
-  lignes        LigneFacture[]
-
-  @@index([id_patient])
-  @@index([statut])
-  @@map("facture")
-}
-
-enum StatutFacture {
-  en_attente
-  partiellement_paye
-  paye
-  annule
-}
-
-enum ModePaiement {
-  especes
-  wave
-  orange_money
-  carte
-  assurance
-  cheque
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  consultation Consultation? @relation(fields: [consultationId], references: [id])
+  lignes       LigneFacture[]
+  paiements    Paiement[]
 }
 
 model LigneFacture {
-  id_ligne_facture Int     @id @default(autoincrement()) @db.UnsignedInt
-  id_facture       Int     @db.UnsignedInt
-  description      String  @db.VarChar(255)
-  quantite         Int     @default(1) @db.UnsignedSmallInt
-  prix_unitaire    Decimal @db.Decimal(10, 2)
-  montant          Decimal @db.Decimal(12, 2)
+  id           Int    @id @default(autoincrement())
+  factureId    Int
+  description  String
+  quantite     Int    @default(1)
+  prixUnitaire Int    // FCFA
+  montant      Int    // FCFA
 
-  facture   Facture @relation(fields: [id_facture], references: [id_facture], onDelete: Cascade)
-
-  @@map("ligne_facture")
+  facture Facture @relation(fields: [factureId], references: [id])
 }
+
+model Paiement {
+  id        Int      @id @default(autoincrement())
+  factureId Int
+  montant   Int      // FCFA
+  mode      String   // MODE_PAIEMENT.*
+  statut    String   @default("EN_ATTENTE") // STATUT_PAIEMENT.*
+  date      DateTime @default(now())
+  reference String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  facture           Facture            @relation(fields: [factureId], references: [id])
+  transactionMobile TransactionMobile?
+}
+
+model TransactionMobile {
+  id         Int      @id @default(autoincrement())
+  paiementId Int      @unique
+  operateur  String   // OPERATEUR_MOBILE.*
+  telephone  String
+  statut     String   @default("EN_ATTENTE") // STATUT_TRANSACTION.*
+  reference  String?
+  createdAt  DateTime @default(now())
+
+  paiement Paiement @relation(fields: [paiementId], references: [id])
+}
+
+// ─── TÉLÉCONSULTATION ────────────────────────────────────────────────────────
+
+model Teleconsultation {
+  id           Int       @id @default(autoincrement())
+  rendezvousId Int       @unique
+  medecinId    Int
+  urlVisio     String
+  plateforme   String    @default("JITSI") // PLATEFORME_VISIO.*
+  statut       String    @default("PLANIFIEE") // STATUT_TELECONSULT.*
+  dateDebut    DateTime?
+  dateFin      DateTime?
+  duree        Int?      // minutes
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  rendezvous RendezVous @relation(fields: [rendezvousId], references: [id])
+  medecin    Medecin    @relation(fields: [medecinId], references: [id])
+}
+
+// ─── NOTIFICATIONS & ACTUALITÉS ──────────────────────────────────────────────
 
 model Notification {
-  id_notification Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_util         Int      @db.UnsignedInt
-  message         String   @db.Text
-  type            TypeNotification @default(systeme)
-  lu              Boolean  @default(false)
-  lien            String?  @db.VarChar(255)
-  created_at      DateTime @default(now())
+  id            Int       @id @default(autoincrement())
+  utilisateurId Int
+  titre         String
+  message       String
+  canal         String    @default("IN_APP") // CANAL_NOTIFICATION.*
+  statut        String    @default("PLANIFIE") // STATUT_NOTIFICATION.*
+  lien          String?
+  lu            Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  envoyeAt      DateTime?
 
-  utilisateur Utilisateur @relation(fields: [id_util], references: [id_util], onDelete: Cascade)
-
-  @@index([id_util, lu])
-  @@map("notification")
-}
-
-enum TypeNotification {
-  rdv
-  urgence
-  ordonnance
-  stock
-  facture
-  systeme
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id])
 }
 
 model Actualite {
-  id_actualite Int      @id @default(autoincrement()) @db.UnsignedInt
-  titre        String   @db.VarChar(200)
-  contenu      String?  @db.Text
-  type         TypeActualite @default(annonce)
-  id_stock     Int?     @db.UnsignedInt
-  publie       Boolean  @default(true)
-  created_at   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  titre     String
+  contenu   String
+  image     String?
+  categorie String   @default("INFO") // INFO | DON_SANG | VACCINATION | SENSIBILISATION | EVENEMENT | URGENCE
+  auteurId  Int?
+  publiee   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  stock Stock? @relation(fields: [id_stock], references: [id_stock], onDelete: SetNull)
-
-  @@index([type])
-  @@index([created_at])
-  @@map("actualite")
+  auteur    Utilisateur? @relation(fields: [auteurId], references: [id])
 }
 
-enum TypeActualite {
-  stock_entree
-  stock_alerte
-  stock_peremption
-  conseil
-  annonce
-}
+model Interaction {
+  id             Int      @id @default(autoincrement())
+  expediteurId   Int
+  destinataireId Int
+  message        String
+  lu             Boolean  @default(false)
+  createdAt      DateTime @default(now())
 
-model Teleconsultation {
-  id_teleconsult  Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_rdv          Int      @db.UnsignedInt
-  id_medecin      Int      @db.UnsignedInt
-  id_patient      Int      @db.UnsignedInt
-  statut          StatutTeleconsult @default(planifiee)
-  lien_session    String?  @db.VarChar(500)
-  date_debut      DateTime?
-  date_fin        DateTime?
-  notes           String?  @db.Text
-  created_at      DateTime @default(now())
-
-  rdv     Rdv     @relation(fields: [id_rdv], references: [id_rdv], onDelete: Cascade)
-  medecin Medecin @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
-  patient Patient @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-
-  @@map("teleconsultation")
-}
-
-enum StatutTeleconsult {
-  planifiee
-  en_cours
-  terminee
-  annulee
-}
-
-model InteractionMedicamenteuse {
-  id_interaction   Int    @id @default(autoincrement()) @db.UnsignedInt
-  id_medicament_a  Int    @db.UnsignedInt
-  id_medicament_b  Int    @db.UnsignedInt
-  niveau           NiveauInteraction @default(modere)
-  description      String? @db.Text
-
-  medicament_a Medicament @relation("MedicamentA", fields: [id_medicament_a], references: [id_medicament], onDelete: Cascade)
-  medicament_b Medicament @relation("MedicamentB", fields: [id_medicament_b], references: [id_medicament], onDelete: Cascade)
-
-  @@unique([id_medicament_a, id_medicament_b])
-  @@map("interaction_medicamenteuse")
-}
-
-enum NiveauInteraction {
-  faible
-  modere
-  eleve
-  contrindication
-}
-
-model ListeAttenteRdv {
-  id_liste      Int      @id @default(autoincrement()) @db.UnsignedInt
-  id_patient    Int      @db.UnsignedInt
-  id_medecin    Int      @db.UnsignedInt
-  date_souhaitee DateTime? @db.Date
-  motif         String?  @db.VarChar(255)
-  priorite      Int      @default(3) @db.UnsignedTinyInt
-  statut        StatutListeAttente @default(en_attente)
-  created_at    DateTime @default(now())
-
-  patient Patient @relation(fields: [id_patient], references: [id_patient], onDelete: Cascade)
-  medecin Medecin @relation(fields: [id_medecin], references: [id_medecin], onDelete: Cascade)
-
-  @@map("liste_attente_rdv")
-}
-
-enum StatutListeAttente {
-  en_attente
-  propose
-  confirme
-  expire
+  expediteur   Utilisateur @relation("MessagesEnvoyes", fields: [expediteurId], references: [id])
+  destinataire Utilisateur @relation("MessagesRecus",   fields: [destinataireId], references: [id])
 }

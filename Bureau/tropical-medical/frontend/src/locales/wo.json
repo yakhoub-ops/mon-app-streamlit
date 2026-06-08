@@ -1,0 +1,129 @@
+{
+  "app": {
+    "name": "Tropical Medical",
+    "tagline": "Wërsëg ak Jam ci Senegaal"
+  },
+  "nav": {
+    "accueil":     "Kër gi",
+    "services":    "Liggéeyam",
+    "medecins":    "Dotori yi",
+    "paiements":   "Fay bi",
+    "contact":     "Jokkoo",
+    "connexion":   "Duggël",
+    "inscription": "Bindël sa tur"
+  },
+  "auth": {
+    "connexion":         "Duggël",
+    "deconnexion":       "Génnal",
+    "email":             "Aadreseru email",
+    "motDePasse":        "Mot de passe",
+    "seConnecter":       "Dugg",
+    "accesRapide":       "Dugg yépp (démo)",
+    "erreurIdentifiants":"Informasion yu wér",
+    "chargement":        "Xëjël bi dafa yóbbu…"
+  },
+  "roles": {
+    "PATIENT":          "Ku sëmë",
+    "MEDECIN":          "Dotori",
+    "RECEPTIONNISTE":   "Ku jël xam-xam",
+    "PHARMACIEN":       "Ku jox dawa",
+    "ADMIN":            "Gestionnaire"
+  },
+  "statuts": {
+    "EN_ATTENTE": "Xëjëlleen",
+    "CONFIRME":   "Dëgënaale",
+    "ANNULE":     "Daaneel",
+    "TERMINE":    "Jeexël",
+    "APPELE":     "Woo na",
+    "CONSULTE":   "Xeex na",
+    "PARTI":      "Dem na",
+    "EN_COURS":   "Amoon na",
+    "TERMINEE":   "Jeex na",
+    "PAYE":       "Fay na",
+    "REUSSI":     "Mën na",
+    "ECHOUE":     "Mënul",
+    "LIBRE":      "Xolu na",
+    "OCCUPE":     "Nopp na",
+    "RESERVE":    "Bëgg na",
+    "MAINTENANCE":"Doxallu na"
+  },
+  "modules": {
+    "tableau_bord":      "Tableau de bord",
+    "rdv":               "Yéggël ak dotori",
+    "mes_rdv":           "Yéggël yi am",
+    "consultations":     "Xeex yi",
+    "dossiers":          "Dossier yu sëmë yi",
+    "mon_dossier":       "Dossier bi",
+    "dossiers_patients": "Dossier sëmë yi",
+    "ordonnances":       "Ordonans yi",
+    "mes_ordonnances":   "Ordonans yi am",
+    "hospitalisation":   "Ospital",
+    "gestion_lits":      "Liggéey ak wët yi",
+    "file_attente":      "Xëjëlleen yi",
+    "pharmacie":         "Farmaasi",
+    "stock":             "Reew bi",
+    "facturation":       "Fes bi",
+    "mes_factures":      "Fes yi am",
+    "paiements":         "Fay bi",
+    "teleconsultation":  "Xeex ci telefon",
+    "notifications":     "Xibaar yi",
+    "parametres":        "Réglages",
+    "parametres_sys":    "Réglages système",
+    "utilisateurs":      "Jëfandikukat yi",
+    "medecins":          "Dotori yi",
+    "actualites":        "Xibaar yam",
+    "statistiques":      "Statistiques",
+    "urgences":          "Gaaw gaaw",
+    "patients":          "Sëmë yi",
+    "livraisons":        "Yóbu dawa yi"
+  },
+  "actions": {
+    "nouveau":     "Bees",
+    "ajouter":     "Yokk",
+    "modifier":    "Soppi",
+    "supprimer":   "Boole",
+    "enregistrer": "Bind",
+    "annuler":     "Daaneel",
+    "confirmer":   "Dëgënaale",
+    "fermer":      "Tëj",
+    "voir":        "Xool",
+    "telecharger": "Jëlle",
+    "imprimer":    "Imprimer",
+    "rechercher":  "Seet",
+    "filtrer":     "Trier",
+    "exporter":    "Génnal",
+    "rafraichir":  "Soppi"
+  },
+  "paiement": {
+    "especes":     "Xaalis bu rëy",
+    "mobile_money":"Mobile Money",
+    "assurance":   "Asiraans",
+    "carte":       "Kart banke",
+    "orange_money":"Orange Money",
+    "wave":        "Wave",
+    "free_money":  "Free Money",
+    "montant":     "Xaalis",
+    "fcfa":        "FCFA",
+    "payer":       "Fay",
+    "recu":        "Reçu"
+  },
+  "notifs": {
+    "titre":      "Xibaar yi",
+    "tout_lire":  "Bind leen yépp",
+    "aucune":     "Xibaar amul",
+    "a_linstant": "Léegi léegi",
+    "il_y_a_min": "Ci {n} min woon",
+    "il_y_a_h":   "Ci {n}g woon"
+  },
+  "theme": {
+    "clair":  "Muñ wi",
+    "sombre": "Ëndaange wi"
+  },
+  "messages": {
+    "succes":                   "Liggéey bi dafa mën",
+    "erreur":                   "Ñaari xam-xam am na",
+    "chargement":               "Xëjëlleen…",
+    "aucun_resultat":           "Dara seetaan",
+    "confirmation_suppression": "Bëgg nga dëgënaale boole bi?"
+  }
+}

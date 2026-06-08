@@ -1,12 +1,30 @@
-const router = require('express').Router();
-const ctrl = require('../controllers/medecin.controller');
-const auth = require('../middleware/auth');
+const express = require('express')
+const router  = express.Router()
+const auth      = require('../middlewares/auth')
+const roleCheck = require('../middlewares/roleCheck')
+const c         = require('../controllers/medecin.controller')
 
-router.get('/', ctrl.getAll);
-router.get('/:id', ctrl.getById);
-router.put('/:id', auth, ctrl.update);
-router.get('/:id/disponibilites', ctrl.getDisponibilites);
-router.put('/:id/disponibilites', auth, ctrl.setDisponibilites);
-router.get('/:id/creneaux', ctrl.getCreneaux);
+const guard = [auth, roleCheck('MEDECIN')]
 
-module.exports = router;
+router.get('/profil',                          ...guard, c.monProfil)
+router.put('/profil',                          ...guard, c.mettreAJourProfil)
+router.put('/teleconsultation/statut',         ...guard, c.toggleTeleconsultation)
+router.get('/statistiques',                 ...guard, c.mesStatistiques)
+router.get('/agenda',                       ...guard, c.monAgenda)
+router.get('/file-attente',                 ...guard, c.fileAttente)
+router.put('/file-attente/:id/appeler',     ...guard, c.appellerPatient)
+router.post('/consultations',               ...guard, c.creerConsultation)
+router.get('/dossiers',                          ...guard, c.mesDossiers)
+router.get('/dossiers/:dossierId',               ...guard, c.dossierPatient)
+router.put('/dossiers/:dossierId',               ...guard, c.mettreAJourDossier)
+router.post('/dossiers/:dossierId/vaccinations', ...guard, c.ajouterVaccination)
+router.delete('/vaccinations/:id',               ...guard, c.supprimerVaccination)
+router.post('/dossiers/:dossierId/examens',      ...guard, c.ajouterExamen)
+router.delete('/examens/:id',                    ...guard, c.supprimerExamen)
+router.get('/medicaments',                  ...guard, c.listeMedicaments)
+router.get('/consultations',               ...guard, c.mesConsultations)
+router.get('/ordonnances',                 ...guard, c.mesOrdonnances)
+router.post('/ordonnances',                ...guard, c.creerOrdonnanceDirecte)
+router.get('/urgences',                    ...guard, c.mesUrgences)
+
+module.exports = router

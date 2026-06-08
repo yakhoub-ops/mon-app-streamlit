@@ -1,0 +1,972 @@
+\documentclass[12pt, a4paper]{report}
+
+% ── Encodage & langue ──────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% ── Mise en page ───────────────────────────────────────────────────────────────
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ── Typographie ────────────────────────────────────────────────────────────────
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ── Couleurs & graphiques ──────────────────────────────────────────────────────
+\usepackage[dvipsnames, table]{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, shadows}
+
+% ── Tableaux ───────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{array}
+
+% ── Code source ────────────────────────────────────────────────────────────────
+\usepackage{listings}
+
+% ── Liens & PDF ────────────────────────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks  = true,
+  linkcolor   = TropicalTeal,
+  urlcolor    = TropicalTeal,
+  citecolor   = TropicalTeal,
+  pdftitle    = {Rapport de Projet — Tropical Medical},
+  pdfauthor   = {Yakhoub Baby},
+}
+
+% ── Entêtes & pieds de page ────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Tropical Medical — Plateforme Médicale Sénégalaise}}
+\fancyhead[R]{\small\textit{Yakhoub Baby}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Titres de chapitres ────────────────────────────────────────────────────────
+\usepackage{titlesec}
+\titleformat{\chapter}[block]
+  {\normalfont\huge\bfseries\color{TropicalTeal}}
+  {\thechapter.}{12pt}{}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{TropicalDark}}
+  {\thesection}{8pt}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{TropicalDark}}
+  {\thesubsection}{6pt}{}
+
+% ── Boîtes colorées ────────────────────────────────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable, listingsutf8}
+
+% ── Listes ─────────────────────────────────────────────────────────────────────
+\usepackage{enumitem}
+
+% ── Couleurs du projet ─────────────────────────────────────────────────────────
+\definecolor{TropicalTeal}{RGB}{14, 159, 142}
+\definecolor{TropicalDark}{RGB}{15, 23, 42}
+\definecolor{TropicalLight}{RGB}{240, 253, 250}
+\definecolor{CodeBg}{RGB}{248, 250, 252}
+\definecolor{AccentGold}{RGB}{230, 184, 0}
+
+% ── Style boîte technologie ────────────────────────────────────────────────────
+\newtcolorbox{techbox}[2][]{
+  colback    = TropicalLight,
+  colframe   = TropicalTeal,
+  fonttitle  = \bfseries\color{white},
+  coltitle   = white,
+  colbacktitle = TropicalTeal,
+  title      = #2,
+  sharp corners = south,
+  #1
+}
+
+% ── Style boîte remarque ───────────────────────────────────────────────────────
+\newtcolorbox{remarque}{
+  colback  = yellow!8,
+  colframe = AccentGold,
+  fontupper = \small,
+  left = 4pt, right = 4pt,
+}
+
+% ── Configuration listings ─────────────────────────────────────────────────────
+\lstset{
+  backgroundcolor = \color{CodeBg},
+  basicstyle      = \ttfamily\small,
+  breaklines      = true,
+  frame           = single,
+  rulecolor       = \color{TropicalTeal!40},
+  keywordstyle    = \bfseries\color{TropicalTeal},
+  commentstyle    = \itshape\color{gray},
+  stringstyle     = \color{AccentGold!80!black},
+  numbers         = left,
+  numberstyle     = \tiny\color{gray},
+  xleftmargin     = 1em,
+  extendedchars   = true,
+  literate        =
+    {é}{{\'{e}}}1 {è}{{\`{e}}}1 {ê}{{\^{e}}}1 {ë}{{\"e}}1
+    {à}{{\`{a}}}1 {â}{{\^{a}}}1 {ä}{{\"a}}1
+    {î}{{\^{i}}}1 {ï}{{\"i}}1
+    {ô}{{\^{o}}}1 {ö}{{\"o}}1 {ó}{{\'{o}}}1
+    {û}{{\^{u}}}1 {ù}{{\`{u}}}1 {ü}{{\"u}}1
+    {ç}{{\c{c}}}1 {Ç}{{\c{C}}}1
+    {É}{{\'{E}}}1 {È}{{\`{E}}}1 {Â}{{\^{A}}}1,
+}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── PAGE DE GARDE ─────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{1cm}
+
+  % Bandeau coloré
+  \begin{tikzpicture}
+    \fill[TropicalTeal] (0,0) rectangle (16,2.5);
+    \node[text=white, font=\Huge\bfseries] at (8,1.25)
+      {TROPICAL MEDICAL};
+  \end{tikzpicture}
+
+  \vspace{1.2cm}
+
+  {\LARGE\bfseries Rapport de Projet}\\[0.4cm]
+  {\large Plateforme Médicale Numérique Sénégalaise}
+
+  \vspace{1cm}
+  \rule{12cm}{0.8pt}
+  \vspace{0.5cm}
+
+  \begin{tabular}{rl}
+    \textbf{Auteur}       & Yakhoub Baby \\[4pt]
+    \textbf{Email}        & \href{mailto:yakhoub.baby@univ-thies.sn}
+                            {yakhoub.baby@univ-thies.sn} \\[4pt]
+    \textbf{Établissement}& Université de Thiès \\[4pt]
+    \textbf{Année}        & 2025 -- 2026 \\
+  \end{tabular}
+
+  \vspace{0.8cm}
+  \rule{12cm}{0.8pt}
+  \vspace{1.2cm}
+
+  % Résumé visuel des rôles
+  \begin{tikzpicture}[
+    role/.style={
+      draw=TropicalTeal, rounded corners=6pt,
+      fill=TropicalLight, minimum width=2.2cm,
+      minimum height=1cm, font=\small\bfseries,
+      text=TropicalDark, drop shadow
+    }
+  ]
+    \node[role] (p) at (0,0)     {Patient};
+    \node[role] (m) at (2.6,0)   {Médecin};
+    \node[role] (r) at (5.2,0)   {Réceptionniste};
+    \node[role] (ph) at (8.4,0)  {Pharmacien};
+    \node[role] (a) at (11.2,0)  {Admin};
+  \end{tikzpicture}
+
+  \vspace{1.5cm}
+
+  \begin{tikzpicture}
+    \fill[TropicalTeal!20] (0,0) rectangle (16,0.6);
+    \node[font=\small\itshape\color{TropicalDark}] at (8,0.3)
+      {Vue 3 \textbullet\ Node.js \textbullet\ Prisma 5 \textbullet\
+       SQLite \textbullet\ Socket.io \textbullet\ JWT};
+  \end{tikzpicture}
+
+  \vfill
+  {\small Version 4.0 — \today}
+\end{titlepage}
+
+% ── TABLE DES MATIÈRES ────────────────────────────────────────────────────────
+\tableofcontents
+\clearpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+\textbf{Tropical Medical} est une plateforme médicale numérique conçue pour
+répondre aux besoins des établissements de santé au Sénégal. Elle centralise
+la gestion des patients, des rendez-vous, des consultations, des dossiers
+médicaux, de la pharmacie, de l'hospitalisation, de la facturation et de la
+téléconsultation au sein d'une interface web moderne, accessible sur ordinateur
+et téléphone mobile.
+
+\medskip
+
+L'application est construite autour d'une architecture découplée
+\textit{frontend / backend} : le frontend est développé en \textbf{Vue 3} avec
+l'API Composition, tandis que le backend repose sur \textbf{Node.js} avec le
+framework \textbf{Express.js 5} et l'ORM \textbf{Prisma 5} pour la gestion
+de la base de données \textbf{SQLite}. La communication en temps réel est
+assurée par \textbf{Socket.io}.
+
+\medskip
+
+Cinq profils d'utilisateurs sont pris en charge : \textit{Patient, Médecin,
+Réceptionniste, Pharmacien} et \textit{Administrateur}, chacun disposant d'un
+espace personnalisé et de fonctionnalités adaptées à son rôle.
+
+\bigskip
+
+\begin{center}
+\begin{tabular}{lc}
+  \toprule
+  \textbf{Indicateur} & \textbf{Valeur} \\
+  \midrule
+  Nombre de rôles utilisateurs   & 5 \\
+  Nombre de modules fonctionnels & 14 \\
+  Nombre de tables en base       & 22 \\
+  Communication temps réel       & Socket.io \\
+  Authentification               & JWT (JSON Web Token) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Introduction}
+
+\section{Contexte}
+
+Le système de santé sénégalais fait face à plusieurs défis opérationnels :
+gestion manuelle des dossiers patients, manque de coordination entre les
+différents acteurs médicaux (médecins, pharmaciens, réceptionnistes), et
+difficulté d'accès aux soins pour les populations éloignées. La digitalisation
+des processus médicaux représente un levier important pour améliorer la qualité
+des soins et l'efficacité administrative.
+
+\section{Objectifs}
+
+L'objectif principal de ce projet est de concevoir et développer une application
+web complète permettant à un établissement de santé de gérer l'ensemble de ses
+activités cliniques et administratives. Plus spécifiquement, il s'agit de :
+
+\begin{itemize}[leftmargin=2cm]
+  \item Centraliser les dossiers médicaux des patients sous format numérique ;
+  \item Fluidifier la prise de rendez-vous et la gestion de la file d'attente ;
+  \item Faciliter les prescriptions médicales et le suivi des ordonnances ;
+  \item Assurer la traçabilité de la facturation et des paiements ;
+  \item Permettre la téléconsultation par vidéo ;
+  \item Gérer le stock de médicaments et les lots de la pharmacie ;
+  \item Offrir une messagerie interne entre les acteurs de santé ;
+  \item Diffuser des actualités de santé publique.
+\end{itemize}
+
+\section{Périmètre du projet}
+
+L'application est destinée à être déployée dans des cliniques, hôpitaux de
+district et centres de santé au Sénégal. Elle prend en charge cinq catégories
+d'utilisateurs, chacune avec des droits et des interfaces spécifiques.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Architecture du système}
+
+\section{Architecture générale}
+
+L'application suit une architecture \textbf{client-serveur découplée} en trois
+couches :
+
+\begin{enumerate}
+  \item \textbf{Couche présentation} (Frontend) : application web monopage
+        (\textit{Single Page Application}) développée en Vue 3.
+  \item \textbf{Couche métier} (Backend) : API REST sécurisée développée en
+        Node.js / Express.js.
+  \item \textbf{Couche données} (Base de données) : base relationnelle SQLite
+        gérée via l'ORM Prisma 5.
+\end{enumerate}
+
+\medskip
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={
+    draw=TropicalTeal, rounded corners=8pt, fill=TropicalLight,
+    minimum width=5cm, minimum height=1.2cm, font=\bfseries,
+    text=TropicalDark, drop shadow, align=center
+  },
+  arr/.style={-Stealth, thick, color=TropicalTeal}
+]
+  \node[box] (front)  at (0, 0)   {Navigateur Web\\{\small Vue 3 — SPA}};
+  \node[box] (back)   at (0,-2.5) {Serveur Node.js\\{\small Express.js 5 + Socket.io}};
+  \node[box] (db)     at (0,-5)   {Base de données\\{\small SQLite via Prisma 5}};
+
+  \draw[arr] (front.south) -- node[right, font=\small]{HTTP/REST + WS} (back.north);
+  \draw[arr] (back.south)  -- node[right, font=\small]{Prisma ORM}      (db.north);
+  \draw[arr] (back.north)  -- (front.south);
+  \draw[arr] (db.north)    -- (back.south);
+\end{tikzpicture}
+\end{center}
+
+\section{Architecture du frontend}
+
+Le frontend est organisé selon une structure modulaire par rôle :
+
+\begin{lstlisting}[language=bash, caption={Structure du répertoire frontend/src/}]
+src/
+├── assets/           # Ressources statiques
+├── components/       # Composants réutilisables
+│   ├── layout/       # AppSidebar, AppHeader, NotifToast
+│   └── MessageriePanel.vue
+├── composables/      # Hooks réutilisables (useApi, useDate)
+├── layouts/          # Layouts par rôle (Patient, Medecin, ...)
+├── router/           # Configuration Vue Router
+├── stores/           # Stores Pinia (auth, notifications, messagerie)
+├── views/            # Pages par rôle
+│   ├── medecin/
+│   ├── patient/
+│   ├── receptionniste/
+│   ├── pharmacien/
+│   └── admin/
+├── style.css         # Design system global
+└── main.js
+\end{lstlisting}
+
+\section{Architecture du backend}
+
+\begin{lstlisting}[language=bash, caption={Structure du répertoire backend/src/}]
+src/
+├── app.js                  # Point d'entrée Express + Socket.io
+├── config/
+│   ├── prisma.js           # Instance Prisma Client
+│   └── constants.js        # Constantes métier (rôles, statuts)
+├── controllers/            # Logique métier par domaine
+│   ├── auth.controller.js
+│   ├── patient.controller.js
+│   ├── medecin.controller.js
+│   ├── receptionniste.controller.js
+│   ├── pharmacien.controller.js
+│   ├── admin.controller.js
+│   ├── notifications.controller.js
+│   ├── messagerie.controller.js
+│   └── actualite.controller.js
+├── middlewares/
+│   ├── auth.js             # Vérification JWT
+│   └── roleCheck.js        # Contrôle d'accès par rôle
+├── routes/                 # Définition des routes API
+├── helpers/
+│   └── notificationHelper.js
+└── cron.js                 # Tâches planifiées (node-cron)
+\end{lstlisting}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Technologies utilisées}
+
+\section{Frontend}
+
+\subsection{Vue.js 3}
+
+\begin{techbox}{Vue.js 3 — Framework JavaScript}
+Vue.js est un framework JavaScript progressif open-source pour la construction
+d'interfaces utilisateur. La version 3, utilisée dans ce projet, introduit
+l'\textbf{API Composition} (\texttt{setup}), qui permet une meilleure
+organisation du code et une réutilisabilité accrue des logiques métier via
+des \textit{composables}.
+\end{techbox}
+
+\medskip
+
+Fonctionnalités Vue 3 utilisées dans le projet :
+\begin{itemize}
+  \item \texttt{ref()} et \texttt{computed()} pour la réactivité ;
+  \item \texttt{onMounted()} / \texttt{onUnmounted()} pour le cycle de vie ;
+  \item \texttt{watch()} pour réagir aux changements d'état ;
+  \item \texttt{<Teleport>} pour les modales hors du DOM parent ;
+  \item \texttt{<Transition>} et \texttt{<TransitionGroup>} pour les animations ;
+  \item \texttt{<script setup>} — syntaxe sucre syntaxique de l'API Composition.
+\end{itemize}
+
+\subsection{Vite 8}
+
+Vite est un outil de build ultra-rapide pour le développement web moderne.
+Il exploite les modules ES natifs du navigateur en mode développement pour
+éliminer le temps de bundling, ce qui se traduit par des démarrages de serveur
+quasi-instantanés. En production, il utilise \textbf{Rollup} pour générer
+des bundles optimisés.
+
+\subsection{Pinia}
+
+Pinia est le gestionnaire d'état officiel de Vue 3. Il remplace Vuex avec
+une API plus simple et une meilleure intégration TypeScript. Dans ce projet,
+trois stores Pinia sont utilisés :
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Store} & \textbf{Fichier} & \textbf{Rôle} \\
+  \midrule
+  \texttt{useAuthStore}          & auth.js          & Utilisateur connecté, token JWT \\
+  \texttt{useNotificationsStore} & notifications.js & Notifications temps réel \\
+  \texttt{useMessagerieStore}    & messagerie.js    & Badge messages non lus \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Vue Router 4}
+
+Vue Router assure la navigation côté client (SPA). Le routeur est configuré
+avec des \textbf{routes imbriquées par rôle} et des \textbf{gardes de navigation}
+(\textit{beforeEach}) qui vérifient l'authentification JWT et le rôle avant
+chaque changement de page.
+
+\subsection{Vue I18n}
+
+Vue I18n permet l'internationalisation de l'interface. L'application supporte
+le \textbf{français} et l'\textbf{anglais} avec basculement dynamique sans
+rechargement de page.
+
+\subsection{Lucide Vue Next}
+
+Bibliothèque d'icônes SVG légère (plus de 1~000 icônes). Utilisée pour toutes
+les icônes de l'interface : menus, boutons, badges, statuts.
+
+\subsection{Socket.io Client}
+
+Utilisé côté frontend pour recevoir les événements temps réel émis par le
+serveur (nouvelles notifications, nouveaux messages de messagerie).
+
+\subsection{@vueuse/motion}
+
+Bibliothèque d'animations déclaratives pour Vue 3, basée sur les animations
+CSS et Web Animations API. Utilisée pour les animations d'entrée des éléments.
+
+\subsection{Tailwind CSS 4}
+
+Framework CSS utilitaire intégré via le plugin Vite. Complète le design system
+personnalisé de l'application pour certaines mises en page.
+
+\subsection{Montserrat — Google Fonts}
+
+Toutes les polices de l'application utilisent la famille \textbf{Montserrat}
+(poids 300 à 900), importée depuis Google Fonts. Cette police sans-serif
+géométrique confère à l'interface un aspect moderne et professionnel.
+
+% ── Backend ──────────────────────────────────────────────────────────────────
+\section{Backend}
+
+\subsection{Node.js}
+
+Node.js est un environnement d'exécution JavaScript côté serveur, basé sur
+le moteur V8 de Chrome. Son modèle non-bloquant et orienté événements le rend
+particulièrement adapté aux applications web nécessitant de nombreuses
+connexions simultanées.
+
+\subsection{Express.js 5}
+
+Express.js est le framework web minimaliste le plus utilisé avec Node.js.
+La version 5, adoptée dans ce projet, apporte notamment la gestion native des
+erreurs asynchrones sans \textit{try/catch} explicite.
+
+\medskip
+
+L'API REST expose les routes suivantes :
+
+\begin{center}
+\rowcolors{2}{TropicalLight}{white}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Préfixe} & \textbf{Domaine} \\
+  \midrule
+  \texttt{/api/auth}           & Authentification \\
+  \texttt{/api/patient}        & Espace patient \\
+  \texttt{/api/medecin}        & Espace médecin \\
+  \texttt{/api/receptionniste} & Espace réceptionniste \\
+  \texttt{/api/pharmacien}     & Espace pharmacien \\
+  \texttt{/api/admin}          & Administration \\
+  \texttt{/api/notifications}  & Notifications \\
+  \texttt{/api/messagerie}     & Messagerie interne \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Prisma 5}
+
+Prisma est un ORM (\textit{Object-Relational Mapper}) de nouvelle génération
+pour Node.js. Il génère automatiquement un client TypeScript/JavaScript typé
+à partir d'un schéma déclaratif (\texttt{schema.prisma}), ce qui élimine
+les requêtes SQL manuelles et réduit les erreurs.
+
+\medskip
+
+Fonctionnalités Prisma utilisées :
+\begin{itemize}
+  \item Migrations automatiques (\texttt{prisma migrate dev}) ;
+  \item Peuplement de la base (\texttt{prisma db seed}) ;
+  \item Studio visuel (\texttt{prisma studio}) pour inspecter les données ;
+  \item Relations \texttt{@relation}, clés étrangères, contraintes \texttt{@unique}.
+\end{itemize}
+
+\subsection{SQLite}
+
+SQLite est utilisé comme base de données relationnelle. Légère et sans serveur
+dédié, elle est idéale pour le développement et les petites structures.
+La base de données est un seul fichier (\texttt{dev.db}) stocké localement.
+
+\subsection{JSON Web Token (JWT)}
+
+L'authentification repose sur les \textbf{JWT} (\textit{JSON Web Tokens}).
+Lors de la connexion, le serveur génère un token signé contenant l'identifiant
+et le rôle de l'utilisateur. Ce token est envoyé dans l'en-tête
+\texttt{Authorization: Bearer <token>} à chaque requête et vérifié par le
+middleware \texttt{auth.js}.
+
+\subsection{Socket.io}
+
+Socket.io implémente la communication bidirectionnelle en temps réel entre
+le serveur et les clients via WebSocket (avec fallback HTTP long-polling).
+Utilisations dans le projet :
+
+\begin{itemize}
+  \item Réception des \textbf{notifications} instantanées pour chaque
+        utilisateur connecté (chambre \texttt{user:<id>}) ;
+  \item Émission d'un événement \texttt{nouveau\_message} lors de l'envoi
+        d'un message de messagerie.
+\end{itemize}
+
+\subsection{bcryptjs}
+
+Bibliothèque de hachage des mots de passe avec l'algorithme \textbf{bcrypt}.
+Tous les mots de passe sont stockés sous forme hachée (jamais en clair)
+avec un facteur de coût de 10 itérations.
+
+\subsection{node-cron}
+
+Planificateur de tâches CRON pour Node.js. Utilisé pour exécuter des tâches
+automatiques à intervalles réguliers (rappels de rendez-vous, nettoyage
+de données expirées, etc.).
+
+\subsection{dotenv}
+
+Charge les variables d'environnement depuis le fichier \texttt{.env} dans
+\texttt{process.env}. Permet de séparer la configuration sensible
+(secrets JWT, URL de base de données) du code source.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Modèle de données}
+
+\section{Vue d'ensemble}
+
+La base de données comporte \textbf{22 tables} réparties en six domaines
+fonctionnels. Le schéma est défini dans \texttt{backend/prisma/schema.prisma}.
+
+\begin{center}
+\begin{tikzpicture}[
+  domain/.style={
+    draw=TropicalTeal, rounded corners=6pt, fill=TropicalLight,
+    minimum width=3.5cm, minimum height=1cm,
+    font=\small\bfseries, text=TropicalDark, align=center, drop shadow
+  }
+]
+  \node[domain] (u)   at (0, 4)    {Utilisateurs\\{\tiny Utilisateur, Patient, Médecin}};
+  \node[domain] (rdv) at (5, 4)    {RDV \& File attente\\{\tiny RendezVous, PassageFileAttente}};
+  \node[domain] (d)   at (10, 4)   {Dossier médical\\{\tiny DossierMedical, Consultation}};
+  \node[domain] (ph)  at (0, 1)    {Pharmacie\\{\tiny Medicament, Ordonnance, LotMedicament}};
+  \node[domain] (h)   at (5, 1)    {Hospitalisation\\{\tiny Lit, Hospitalisation}};
+  \node[domain] (f)   at (10, 1)   {Facturation\\{\tiny Facture, Paiement, Transaction}};
+  \node[domain] (n)   at (5,-1.5)  {Notifications \& Messagerie\\{\tiny Notification, Interaction, Actualite}};
+
+  \draw[TropicalTeal, thick] (u) -- (rdv);
+  \draw[TropicalTeal, thick] (rdv) -- (d);
+  \draw[TropicalTeal, thick] (d) -- (ph);
+  \draw[TropicalTeal, thick] (h) -- (f);
+  \draw[TropicalTeal, thick] (u) -- (n);
+\end{tikzpicture}
+\end{center}
+
+\section{Tables principales}
+
+\begin{longtable}{p{3.5cm} p{3cm} p{7cm}}
+  \toprule
+  \textbf{Table} & \textbf{Domaine} & \textbf{Description} \\
+  \midrule
+  \endhead
+  \texttt{Utilisateur}     & Auth       & Compte de base (nom, email, rôle, mot de passe haché) \\
+  \texttt{Patient}         & Profil     & Données médicales du patient (groupe sanguin, allergies, antécédents) \\
+  \texttt{Medecin}         & Profil     & Spécialité, numéro d'ordre, tarif consultation \\
+  \texttt{RendezVous}      & Planning   & Date, type (présentiel/téléconsultation), statut, motif \\
+  \texttt{PassageFileAttente} & Flux    & Gestion de la file avec niveau d'urgence \\
+  \texttt{DossierMedical}  & Clinique   & Dossier central, relié aux consultations et ordonnances \\
+  \texttt{Consultation}    & Clinique   & Anamnèse, examen clinique, diagnostic, traitement \\
+  \texttt{Ordonnance}      & Pharmacie  & Prescriptions avec lignes de médicaments \\
+  \texttt{Medicament}      & Pharmacie  & Catalogue médicaments (stock, prix, DCI) \\
+  \texttt{LotMedicament}   & Pharmacie  & Traçabilité des lots (numéro, expiration, quantité) \\
+  \texttt{Lit}             & Hospit.    & Numéro, chambre, étage, type, statut \\
+  \texttt{Hospitalisation} & Hospit.    & Admission, sortie, coût par jour, motif \\
+  \texttt{Facture}         & Finances   & Montant total, part assurance, part patient, statut \\
+  \texttt{Paiement}        & Finances   & Mode de paiement, référence, montant \\
+  \texttt{Teleconsultation}& Numérique  & URL de la salle, plateforme, durée \\
+  \texttt{Notification}    & Alertes    & Titre, message, canal, lu/non lu \\
+  \texttt{Interaction}     & Messagerie & Message, expéditeur, destinataire, lu/non lu \\
+  \texttt{Actualite}       & Info santé & Titre, contenu, catégorie, auteur, publiée \\
+  \bottomrule
+\end{longtable}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Fonctionnalités développées}
+
+\section{Authentification et contrôle d'accès}
+
+Le système d'authentification repose sur :
+\begin{itemize}
+  \item \textbf{Inscription/Connexion} avec email et mot de passe haché par bcrypt ;
+  \item Génération d'un \textbf{token JWT} valide 24~heures à la connexion ;
+  \item Stockage du token dans \texttt{localStorage} côté client ;
+  \item Middleware \texttt{auth.js} vérifiant la signature du token à chaque
+        appel API ;
+  \item Middleware \texttt{roleCheck.js} autorisant ou refusant l'accès selon
+        le rôle de l'utilisateur (\texttt{PATIENT, MEDECIN, RECEPTIONNISTE,
+        PHARMACIEN, ADMIN}).
+\end{itemize}
+
+\section{Tableau de bord par rôle}
+
+Chaque rôle dispose d'un tableau de bord personnalisé avec des KPI
+(\textit{Key Performance Indicators}) animés et des raccourcis vers les modules
+principaux :
+
+\begin{center}
+\rowcolors{2}{TropicalLight}{white}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Rôle} & \textbf{KPI affichés} \\
+  \midrule
+  Patient        & Prochains RDV, factures en attente, ordonnances actives \\
+  Médecin        & File d'attente, consultations du jour, urgences \\
+  Réceptionniste & RDV du jour, lits libres/occupés, paiements récents \\
+  Pharmacien     & Stock faible, ordonnances à délivrer, lots expirants \\
+  Admin          & Nombre d'utilisateurs par rôle, activité globale \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Gestion des rendez-vous}
+
+\begin{itemize}
+  \item Prise de RDV en ligne par le patient (choix médecin, date, motif) ;
+  \item Types de RDV : présentiel ou téléconsultation ;
+  \item Statuts : \texttt{EN\_ATTENTE}, \texttt{CONFIRME}, \texttt{ANNULE},
+        \texttt{TERMINE} ;
+  \item Filtres par statut avec onglets colorés.
+\end{itemize}
+
+\section{File d'attente}
+
+Gestion en temps quasi-réel des patients en attente de consultation :
+\begin{itemize}
+  \item Enregistrement à l'arrivée avec niveau d'urgence (FAIBLE, MODERE,
+        URGENT, CRITIQUE) ;
+  \item Appel des patients par le médecin ;
+  \item Conversion automatique en consultation à l'appel.
+\end{itemize}
+
+\section{Dossiers médicaux}
+
+Chaque patient possède un dossier médical unique contenant :
+\begin{itemize}
+  \item Historique des consultations (anamnèse, diagnostic, traitement) ;
+  \item Vaccinations avec dates de rappel ;
+  \item Examens médicaux (biologie, radiologie, imagerie) ;
+  \item Antécédents médicaux et chirurgicaux ;
+  \item Maladies chroniques et allergies.
+\end{itemize}
+
+\section{Ordonnances et pharmacie}
+
+\begin{itemize}
+  \item Création d'ordonnances par le médecin avec sélection de médicaments
+        depuis le catalogue ;
+  \item Impression PDF de l'ordonnance dans une fenêtre dédiée ;
+  \item Délivrance par le pharmacien avec mise à jour du stock ;
+  \item Gestion des lots de médicaments (numéro, date d'expiration, quantité) ;
+  \item Alertes automatiques pour les stocks faibles.
+\end{itemize}
+
+\section{Hospitalisation et gestion des lits}
+
+\begin{itemize}
+  \item Grille visuelle des lits par étage avec code couleur (Libre / Occupé /
+        Réservé / Maintenance) ;
+  \item Admission d'un patient sur un lit libre directement depuis la grille ;
+  \item Suivi du coût par jour et calcul automatique de la facture de séjour ;
+  \item Libération du lit à la sortie.
+\end{itemize}
+
+\section{Facturation et paiements}
+
+\begin{itemize}
+  \item Génération automatique d'une facture après consultation ou hospitalisation ;
+  \item Calcul de la part assurance et de la part patient ;
+  \item Modes de paiement : espèces, carte bancaire, Mobile Money
+        (Orange Money, Wave, Free Money) ;
+  \item Suivi des statuts : \texttt{EN\_ATTENTE}, \texttt{PARTIELLEMENT\_PAYE},
+        \texttt{PAYE}.
+\end{itemize}
+
+\section{Téléconsultation}
+
+\begin{itemize}
+  \item Planification d'une séance de vidéo-consultation lors de la prise
+        de RDV ;
+  \item Génération d'un lien de salle \textbf{Jitsi Meet} ;
+  \item Accès à la salle depuis le tableau de bord du médecin et du patient ;
+  \item Enregistrement de la durée de la session.
+\end{itemize}
+
+\section{Messagerie interne}
+
+Système de messagerie directe entre les acteurs de santé :
+\begin{itemize}
+  \item Liste des conversations avec dernière message et compteur non lus ;
+  \item Envoi et réception de messages en temps (quasi) réel via
+        \textbf{polling toutes les 8 secondes} ;
+  \item Badge sur le menu latéral indiquant le nombre de messages non lus,
+        mis à jour toutes les 15~secondes via un store Pinia ;
+  \item Remise à zéro du badge à l'ouverture de la messagerie ;
+  \item Accessible aux trois rôles : Patient, Médecin, Réceptionniste.
+\end{itemize}
+
+\section{Actualités santé}
+
+\begin{itemize}
+  \item Publication d'actualités de santé publique par la réceptionniste
+        (campagnes de vaccination, journées mondiales, dépistages…) ;
+  \item Catégories : \texttt{INFO}, \texttt{DON\_SANG}, \texttt{VACCINATION},
+        \texttt{SENSIBILISATION}, \texttt{EVENEMENT}, \texttt{URGENCE} ;
+  \item Consultation par le patient avec filtres par catégorie et modal
+        de lecture complète ;
+  \item Gestion CRUD (créer, lire, modifier, supprimer, publier/dépublier).
+\end{itemize}
+
+\section{Notifications en temps réel}
+
+\begin{itemize}
+  \item Notification in-app à chaque événement important (RDV confirmé,
+        nouveau message, résultat d'examen disponible) ;
+  \item Connexion Socket.io au chargement du dashboard ;
+  \item Affichage sous forme de toast (\textit{pop-up} éphémère) et dans
+        un panneau de notifications persistant.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Sécurité}
+
+\section{Mesures implémentées}
+
+\begin{center}
+\rowcolors{2}{TropicalLight}{white}
+\begin{tabular}{p{4cm} p{9cm}}
+  \toprule
+  \textbf{Mesure} & \textbf{Description} \\
+  \midrule
+  Hachage des mots de passe & bcryptjs avec 10 rounds de salage \\
+  Authentification stateless & JWT signé avec secret configurable \\
+  Contrôle d'accès & Middleware roleCheck par route API \\
+  CORS configuré & Origines autorisées limitées au frontend \\
+  Variables sensibles & Secrets dans \texttt{.env} (exclu du dépôt Git) \\
+  Validation des entrées & Vérification côté serveur avant chaque écriture \\
+  Séparation des espaces & Chaque rôle n'accède qu'à ses propres données \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Gestion des secrets}
+
+Les données sensibles sont stockées dans le fichier \texttt{.env} qui n'est
+\textbf{jamais versionné} (présent dans \texttt{.gitignore}). Un fichier
+\texttt{.env.example} documente les variables nécessaires sans les valeurs
+réelles :
+
+\begin{lstlisting}[caption={Contenu de backend/.env.example}]
+DATABASE_URL="file:./dev.db"
+JWT_SECRET=remplacer_par_une_cle_secrete_longue_et_aleatoire
+JWT_EXPIRES_IN=24h
+PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+\end{lstlisting}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Interface utilisateur et design}
+
+\section{Design system}
+
+Un design system cohérent est défini dans \texttt{frontend/src/style.css}
+via des \textbf{variables CSS} (\textit{custom properties}) :
+
+\begin{lstlisting}[language=CSS, caption={Extrait des variables CSS globales}]
+:root {
+  --color-primary:   #0E9F8E;   /* Teal medical  */
+  --color-danger:    #EF4444;   /* Rouge urgence */
+  --color-warning:   #F59E0B;   /* Ambre alerte  */
+  --font-sans:    'Montserrat', system-ui, sans-serif;
+  --font-display: 'Montserrat', sans-serif;
+  --radius-card:  1.125rem;  /* Arrondi des cartes */
+}
+\end{lstlisting}
+
+\section{Typographie}
+
+Toute l'application utilise la police \textbf{Montserrat} (Google Fonts),
+disponible en poids 300 (Light) à 900 (Black). Ce choix offre une lisibilité
+optimale sur écran et une apparence moderne et professionnelle adaptée au
+secteur médical.
+
+\section{Responsive design}
+
+L'interface s'adapte aux différentes tailles d'écran grâce aux \textit{media
+queries} CSS. La barre latérale se replie automatiquement sur mobile (en
+dessous de 1024~px) et un bouton hamburger permet de l'afficher en superposition.
+
+\section{Animations}
+
+L'application intègre plusieurs niveaux d'animations :
+\begin{itemize}
+  \item \textbf{Entrées en cascade} (\textit{stagger}) : les cartes apparaissent
+        séquentiellement avec un délai croissant ;
+  \item \textbf{Ressort} (\textit{spring}) : courbe \texttt{cubic-bezier(.34,1.56,.64,1)}
+        pour un effet rebond naturel ;
+  \item \textbf{Bande lumineuse} (\textit{shine}) : reflet animé sur les
+        barres colorées des cartes statistiques ;
+  \item \textbf{Pulse} : clignotement doux sur les badges « Occupés » pour
+        attirer l'attention ;
+  \item \textbf{Compteurs animés} : les chiffres des KPI s'incrémentent au
+        chargement (\texttt{AnimCounter}).
+\end{itemize}
+
+\section{Mode sombre}
+
+L'application supporte un mode sombre activable depuis les paramètres
+utilisateur. Les couleurs basculent via les variables CSS en appliquant
+la classe \texttt{dark} sur l'élément \texttt{<html>}.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Déploiement et gestion de version}
+
+\section{Structure du dépôt}
+
+\begin{lstlisting}[language=bash, caption={Structure racine du projet}]
+tropical-medical/
+├── backend/         # API Node.js
+│   ├── src/
+│   ├── prisma/
+│   ├── .env.example
+│   └── package.json
+├── frontend/        # SPA Vue 3
+│   ├── src/
+│   ├── index.html
+│   └── package.json
+├── .gitignore       # Exclut .env, node_modules, dev.db
+└── README.md
+\end{lstlisting}
+
+\section{Fichier .gitignore}
+
+Le fichier \texttt{.gitignore} à la racine exclut du dépôt Git :
+\begin{itemize}
+  \item Les dossiers \texttt{node\_modules/} (dépendances) ;
+  \item Les fichiers \texttt{.env} (secrets) ;
+  \item La base de données SQLite (\texttt{*.db}, \texttt{*.db-journal}) ;
+  \item Le client Prisma généré (\texttt{backend/generated/}) ;
+  \item Le build de production (\texttt{frontend/dist/}).
+\end{itemize}
+
+\section{Commandes de lancement}
+
+\begin{lstlisting}[language=bash, caption={Démarrage du projet en développement}]
+# Backend
+cd backend
+npm install
+npx prisma migrate dev
+node prisma/seed.js    # Donnees initiales
+npm run dev            # Port 5000
+
+# Frontend (autre terminal)
+cd frontend
+npm install
+npm run dev            # Port 5173
+\end{lstlisting}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\chapter{Conclusion}
+
+\section{Bilan}
+
+Ce projet a abouti à la réalisation d'une plateforme médicale complète et
+fonctionnelle, couvrant l'ensemble du cycle de vie d'un patient au sein d'un
+établissement de santé. L'application \textbf{Tropical Medical} propose :
+
+\begin{itemize}
+  \item Une architecture moderne et maintenable (séparation frontend/backend) ;
+  \item Une interface intuitive adaptée à cinq profils d'utilisateurs distincts ;
+  \item Des fonctionnalités temps réel via Socket.io ;
+  \item Un système de sécurité robuste basé sur JWT et le contrôle d'accès
+        par rôle ;
+  \item Un design system cohérent avec animations et thème sombre.
+\end{itemize}
+
+\section{Perspectives d'évolution}
+
+Plusieurs améliorations peuvent être envisagées pour les versions futures :
+
+\begin{enumerate}
+  \item Migration vers \textbf{PostgreSQL} ou \textbf{MySQL} pour la production ;
+  \item Intégration d'une \textbf{API de paiement mobile} réelle (Orange Money,
+        Wave) ;
+  \item Module de \textbf{rapports et statistiques} avec graphiques avancés ;
+  \item Application mobile native (\textbf{React Native} ou \textbf{Capacitor}) ;
+  \item Déploiement sur un serveur cloud (\textbf{VPS} ou \textbf{PaaS}).
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{thebibliography}{99}
+
+\bibitem{vuejs}
+  Evan You et al.,
+  \textit{Vue.js 3 — The Progressive JavaScript Framework},
+  \url{https://vuejs.org}, 2024.
+
+\bibitem{pinia}
+  Eduardo San Martin Morote,
+  \textit{Pinia — The intuitive store for Vue.js},
+  \url{https://pinia.vuejs.org}, 2024.
+
+\bibitem{prisma}
+  Prisma Inc.,
+  \textit{Prisma — Next-generation Node.js and TypeScript ORM},
+  \url{https://www.prisma.io}, 2024.
+
+\bibitem{express}
+  OpenJS Foundation,
+  \textit{Express.js — Fast, unopinionated, minimalist web framework for Node.js},
+  \url{https://expressjs.com}, 2024.
+
+\bibitem{socketio}
+  Socket.io Contributors,
+  \textit{Socket.IO — Bidirectional and low-latency communication},
+  \url{https://socket.io}, 2024.
+
+\bibitem{jwt}
+  M. Jones, J. Bradley, N. Sakimura,
+  \textit{RFC 7519 — JSON Web Token (JWT)},
+  IETF, 2015.
+
+\bibitem{vite}
+  Evan You et al.,
+  \textit{Vite — Next Generation Frontend Tooling},
+  \url{https://vite.dev}, 2024.
+
+\bibitem{sqlite}
+  D. Richard Hipp,
+  \textit{SQLite — A self-contained, serverless SQL database engine},
+  \url{https://sqlite.org}, 2024.
+
+\end{thebibliography}
+
+\end{document}

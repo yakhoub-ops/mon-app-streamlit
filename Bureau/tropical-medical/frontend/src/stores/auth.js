@@ -1,49 +1,64 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { api } from '../utils/api';
-import { connectSocket, disconnectSocket } from '../utils/socket';
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+const API = import.meta.env.VITE_API_URL
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'));
-  const token = ref(localStorage.getItem('token') || '');
+  const token = ref(localStorage.getItem('tm_token') || null)
+  const utilisateur = ref(JSON.parse(localStorage.getItem('tm_user') || 'null'))
 
-  const isLoggedIn = computed(() => !!token.value);
-  const role = computed(() => user.value?.role);
-  const isAdmin = computed(() => role.value === 'admin');
-  const isMedecin = computed(() => role.value === 'medecin');
-  const isPatient = computed(() => role.value === 'patient');
-  const isReceptionniste = computed(() => role.value === 'receptionniste');
-  const isPharmacien = computed(() => role.value === 'pharmacien');
+  const estConnecte = computed(() => !!token.value && !!utilisateur.value)
 
-  const login = async (email, mot_de_passe) => {
-    const data = await api.post('/auth/login', { email, mot_de_passe });
-    token.value = data.token;
-    user.value = data.user;
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    connectSocket(data.token);
-    return data;
-  };
-
-  const logout = () => {
-    token.value = '';
-    user.value = null;
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    disconnectSocket();
-  };
-
-  const refreshMe = async () => {
-    try {
-      const me = await api.get('/auth/me');
-      user.value = me;
-      localStorage.setItem('user', JSON.stringify(me));
-    } catch {
-      logout();
+  const routeParDefaut = computed(() => {
+    if (!utilisateur.value) return '/'
+    const map = {
+      PATIENT: '/patient',
+      MEDECIN: '/medecin',
+      RECEPTIONNISTE: '/receptionniste',
+      PHARMACIEN: '/pharmacien',
+      ADMIN: '/admin',
     }
-  };
+    return map[utilisateur.value.role] || '/'
+  })
 
-  if (token.value) connectSocket(token.value);
+  async function connexion(email, motDePasse) {
+    const res = await fetch(`${API}/auth/connexion`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, mot_de_passe: motDePasse }),
+    })
 
-  return { user, token, isLoggedIn, role, isAdmin, isMedecin, isPatient, isReceptionniste, isPharmacien, login, logout, refreshMe };
-});
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'Identifiants incorrects')
+    }
+
+    const data = await res.json()
+    token.value = data.token
+    utilisateur.value = data.utilisateur
+
+    localStorage.setItem('tm_token', data.token)
+    localStorage.setItem('tm_user', JSON.stringify(data.utilisateur))
+
+    return data
+  }
+
+  function updateAvatar(avatar) {
+    if (!utilisateur.value) return
+    utilisateur.value = { ...utilisateur.value, avatar }
+    localStorage.setItem('tm_user', JSON.stringify(utilisateur.value))
+  }
+
+  function deconnexion() {
+    token.value = null
+    utilisateur.value = null
+    localStorage.removeItem('tm_token')
+    localStorage.removeItem('tm_user')
+  }
+
+  function entetes() {
+    return { Authorization: `Bearer ${token.value}` }
+  }
+
+  return { token, utilisateur, estConnecte, routeParDefaut, connexion, deconnexion, entetes, updateAvatar }
+})

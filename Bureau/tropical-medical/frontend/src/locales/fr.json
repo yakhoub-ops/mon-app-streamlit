@@ -1,0 +1,129 @@
+{
+  "app": {
+    "name": "Tropical Medical",
+    "tagline": "La santé pour tous au Sénégal"
+  },
+  "nav": {
+    "accueil": "Accueil",
+    "services": "Services",
+    "medecins": "Médecins",
+    "paiements": "Paiements",
+    "contact": "Contact",
+    "connexion": "Connexion",
+    "inscription": "Inscription"
+  },
+  "auth": {
+    "connexion": "Connexion",
+    "deconnexion": "Déconnexion",
+    "email": "Adresse e-mail",
+    "motDePasse": "Mot de passe",
+    "seConnecter": "Se connecter",
+    "accesRapide": "Accès rapide (démo)",
+    "erreurIdentifiants": "Identifiants incorrects",
+    "chargement": "Connexion en cours…"
+  },
+  "roles": {
+    "PATIENT": "Patient",
+    "MEDECIN": "Médecin",
+    "RECEPTIONNISTE": "Réceptionniste",
+    "PHARMACIEN": "Pharmacien",
+    "ADMIN": "Administrateur"
+  },
+  "statuts": {
+    "EN_ATTENTE": "En attente",
+    "CONFIRME": "Confirmé",
+    "ANNULE": "Annulé",
+    "TERMINE": "Terminé",
+    "APPELE": "Appelé",
+    "CONSULTE": "Consulté",
+    "PARTI": "Parti",
+    "EN_COURS": "En cours",
+    "TERMINEE": "Terminée",
+    "PAYE": "Payé",
+    "REUSSI": "Réussi",
+    "ECHOUE": "Échoué",
+    "LIBRE": "Libre",
+    "OCCUPE": "Occupé",
+    "RESERVE": "Réservé",
+    "MAINTENANCE": "Maintenance"
+  },
+  "modules": {
+    "tableau_bord":      "Tableau de bord",
+    "rdv":               "Rendez-vous",
+    "mes_rdv":           "Mes rendez-vous",
+    "consultations":     "Consultations",
+    "dossiers":          "Dossiers médicaux",
+    "mon_dossier":       "Dossier médical",
+    "dossiers_patients": "Dossiers patients",
+    "ordonnances":       "Ordonnances",
+    "mes_ordonnances":   "Mes ordonnances",
+    "hospitalisation":   "Hospitalisation",
+    "gestion_lits":      "Gestion des lits",
+    "file_attente":      "File d'attente",
+    "pharmacie":         "Pharmacie",
+    "stock":             "Stock médicaments",
+    "facturation":       "Facturation",
+    "mes_factures":      "Mes factures",
+    "paiements":         "Paiements",
+    "teleconsultation":  "Téléconsultation",
+    "notifications":     "Notifications",
+    "parametres":        "Paramètres",
+    "parametres_sys":    "Paramètres système",
+    "utilisateurs":      "Utilisateurs",
+    "medecins":          "Médecins",
+    "actualites":        "Actualités",
+    "statistiques":      "Statistiques",
+    "urgences":          "Urgences",
+    "patients":          "Patients",
+    "livraisons":        "Livraisons"
+  },
+  "actions": {
+    "nouveau":     "Nouveau",
+    "ajouter":     "Ajouter",
+    "modifier":    "Modifier",
+    "supprimer":   "Supprimer",
+    "enregistrer": "Enregistrer",
+    "annuler":     "Annuler",
+    "confirmer":   "Confirmer",
+    "fermer":      "Fermer",
+    "voir":        "Voir",
+    "telecharger": "Télécharger",
+    "imprimer":    "Imprimer",
+    "rechercher":  "Rechercher",
+    "filtrer":     "Filtrer",
+    "exporter":    "Exporter",
+    "rafraichir":  "Rafraîchir"
+  },
+  "paiement": {
+    "especes":     "Espèces",
+    "mobile_money":"Mobile Money",
+    "assurance":   "Assurance",
+    "carte":       "Carte bancaire",
+    "orange_money":"Orange Money",
+    "wave":        "Wave",
+    "free_money":  "Free Money",
+    "montant":     "Montant",
+    "fcfa":        "FCFA",
+    "payer":       "Payer",
+    "recu":        "Reçu de paiement"
+  },
+  "notifs": {
+    "titre":          "Notifications",
+    "tout_lire":      "Tout marquer lu",
+    "aucune":         "Aucune notification",
+    "a_linstant":     "À l'instant",
+    "il_y_a_min":     "Il y a {n} min",
+    "il_y_a_h":       "Il y a {n}h"
+  },
+  "theme": {
+    "clair":  "Mode clair",
+    "sombre": "Mode sombre"
+  },
+  "messages": {
+    "succes":                   "Opération réussie",
+    "erreur":                   "Une erreur est survenue",
+    "chargement":               "Chargement…",
+    "aucun_resultat":           "Aucun résultat trouvé",
+    "confirmation_suppression": "Voulez-vous vraiment supprimer cet élément ?"
+  }
+}

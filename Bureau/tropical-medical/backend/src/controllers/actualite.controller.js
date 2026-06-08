@@ -1,59 +1,81 @@
-const prisma = require('../config/prisma');
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
 
-exports.getAll = async (req, res) => {
-  try {
-    const actualites = await prisma.actualite.findMany({
-      where: { publie: true },
-      include: { stock: { include: { medicament: true } } },
-      orderBy: { created_at: 'desc' },
-      take: 30,
-    });
-    res.json(actualites);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-};
+// GET /patient/actualites  — publiées seulement
+async function listerPubliees(req, res) {
+  const { categorie } = req.query
+  const where = { publiee: true }
+  if (categorie && categorie !== 'TOUT') where.categorie = categorie
+  const actualites = await prisma.actualite.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: { auteur: { select: { prenom: true, nom: true } } },
+  })
+  res.json(actualites)
+}
 
-exports.create = async (req, res) => {
-  try {
-    const { titre, contenu, type, id_stock } = req.body;
-    const a = await prisma.actualite.create({ data: { titre, contenu, type, id_stock } });
-    res.status(201).json(a);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-};
+// GET /receptionniste/actualites  — toutes
+async function listerToutes(req, res) {
+  const actualites = await prisma.actualite.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: { auteur: { select: { prenom: true, nom: true } } },
+  })
+  res.json(actualites)
+}
 
-exports.genererDepuisStock = async () => {
-  try {
-    const alertes = await prisma.$queryRaw`
-      SELECT s.id_stock, m.nom, s.quantite, s.seuil_alerte, s.date_peremption
-      FROM stock s JOIN medicament m ON s.id_medicament = m.id_medicament
-      WHERE s.quantite <= s.seuil_alerte
-         OR (s.date_peremption IS NOT NULL AND s.date_peremption <= DATE_ADD(NOW(), INTERVAL 30 DAY))
-    `;
-    for (const a of alertes) {
-      if (a.quantite <= a.seuil_alerte) {
-        await prisma.actualite.create({
-          data: {
-            titre: `Alerte stock : ${a.nom}`,
-            contenu: `Stock faible : ${a.quantite} unités restantes (seuil : ${a.seuil_alerte})`,
-            type: 'stock_alerte',
-            id_stock: a.id_stock,
-          },
-        });
-      } else if (a.date_peremption) {
-        await prisma.actualite.create({
-          data: {
-            titre: `Péremption imminente : ${a.nom}`,
-            contenu: `Le lot expire le ${new Date(a.date_peremption).toLocaleDateString('fr')}`,
-            type: 'stock_peremption',
-            id_stock: a.id_stock,
-          },
-        });
-      }
-    }
-  } catch (e) {
-    console.error('Cron actualites:', e.message);
-  }
-};
+// POST /receptionniste/actualites
+async function creer(req, res) {
+  const { titre, contenu, categorie, image } = req.body
+  if (!titre?.trim() || !contenu?.trim()) return res.status(400).json({ message: 'Titre et contenu requis' })
+  const actu = await prisma.actualite.create({
+    data: {
+      titre: titre.trim(),
+      contenu: contenu.trim(),
+      categorie: categorie || 'INFO',
+      image: image || null,
+      auteurId: req.user.id,
+      publiee: true,
+    },
+    include: { auteur: { select: { prenom: true, nom: true } } },
+  })
+  res.status(201).json(actu)
+}
+
+// PUT /receptionniste/actualites/:id
+async function mettreAJour(req, res) {
+  const id = parseInt(req.params.id)
+  const { titre, contenu, categorie, image, publiee } = req.body
+  const actu = await prisma.actualite.update({
+    where: { id },
+    data: {
+      titre: titre?.trim(),
+      contenu: contenu?.trim(),
+      categorie,
+      image: image || null,
+      publiee: publiee !== undefined ? publiee : undefined,
+    },
+    include: { auteur: { select: { prenom: true, nom: true } } },
+  })
+  res.json(actu)
+}
+
+// PATCH /receptionniste/actualites/:id/publier
+async function basculerPublication(req, res) {
+  const id = parseInt(req.params.id)
+  const actuelle = await prisma.actualite.findUnique({ where: { id }, select: { publiee: true } })
+  if (!actuelle) return res.status(404).json({ message: 'Actualité introuvable' })
+  const actu = await prisma.actualite.update({
+    where: { id },
+    data: { publiee: !actuelle.publiee },
+  })
+  res.json({ id: actu.id, publiee: actu.publiee })
+}
+
+// DELETE /receptionniste/actualites/:id
+async function supprimer(req, res) {
+  const id = parseInt(req.params.id)
+  await prisma.actualite.delete({ where: { id } })
+  res.status(204).end()
+}
+
+module.exports = { listerPubliees, listerToutes, creer, mettreAJour, basculerPublication, supprimer }
